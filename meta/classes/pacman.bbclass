@@ -13,6 +13,13 @@ python () {
 addtask package after do_build before do_stage
 do_package[cleandirs] = "${PKGBASE}"
 
+python() {
+    pkgname = (d.getVar("PACKAGES") or "").split()
+    if len(pkgname) > 1:
+        for p in pkgname:
+            d.appendVarFlag("do_package", "vardeps", " step_package_" + p)
+}
+
 python do_package() {
     packagedir = d.getVar("PKGBASE")
     pkgbuild = open(os.path.join(packagedir, 'PKGBUILD'), 'w')
