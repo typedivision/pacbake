@@ -35,4 +35,5 @@ step_build() {
 
 step_package() {
   cp -r "${SRCDIR}"/_install/. "${PKGDIR}"
+  install -Dm644 "${SRCDIR}"/LICENSE -t "${LICDIR}"
 }

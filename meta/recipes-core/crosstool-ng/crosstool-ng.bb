@@ -87,6 +87,11 @@ step_package_sysroot() {
   cp sbin/ldconfig "${PKGDIR}"/usr/bin
   cp usr/bin/ldd "${PKGDIR}"/usr/bin
 
+  mkdir -p "${PKGDIR}"/usr/share/licenses
+  for pkg in expat gcc glibc linux ncurses; do
+    cp -r "${SRCBASE}"/${XPATH}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+  done
+
   find "${PKGDIR}" -type d -exec chmod 755 {} \;
 }
 
@@ -98,6 +103,11 @@ step_package_sysdebug() {
 
   mkdir -p "${PKGDIR}"/opt/lib
   cp -r sysroot/lib/lib*san.* "${PKGDIR}"/opt/lib
+
+  mkdir -p "${PKGDIR}"/usr/share/licenses
+  for pkg in gdb strace; do
+    cp -r "${SRCBASE}"/${XPATH}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+  done
 
   find "${PKGDIR}" -type d -exec chmod 755 {} \;
 }

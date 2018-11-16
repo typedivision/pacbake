@@ -1,6 +1,8 @@
 PKGBASE = "${WORKDIR}/pkgbase"
 PKGDIR  = "$pkgdir"
 
+LICDIR = "${PKGDIR}/usr/share/licenses/${P}"
+
 HOST_DEPENDS += "pacman fakeroot"
 
 python () {

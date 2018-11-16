@@ -40,15 +40,19 @@ step_install() {
 
   install -D arch/arm64/boot/Image "${FILES_DEPLOY}"/linux/kernel8.img
   cp arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb "${FILES_DEPLOY}"/linux
+  cp COPYING "${FILES_DEPLOY}"/linux/COPYING.linux
   
   install -D arch/arm64/boot/Image "${FILES_SHARED}"/linux/kernel8.img
   cp arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb "${FILES_SHARED}"/linux
+  cp COPYING "${FILES_SHARED}"/linux/COPYING.linux
 
   mkdir -p "${FILES_SHARED}"/linux/overlays
   cp arch/arm64/boot/dts/overlays/*.dtb* "${FILES_SHARED}"/linux/overlays
   cp arch/arm64/boot/dts/overlays/README "${FILES_SHARED}"/linux/overlays
 
   mkdir -p "${FILES_SHARED}"/boot
-  cp "${SRCBASE}"/raspberrypi-firmware-${PV_fw}/boot/{bootcode.bin,start.elf,fixup.dat} "${FILES_SHARED}"/boot
+  for file in bootcode.bin start.elf fixup.dat LICENCE.broadcom; do
+    cp "${SRCBASE}"/raspberrypi-firmware-${PV_fw}/boot/$file "${FILES_SHARED}"/boot
+  done
   cp "${SRCBASE}"/${P}_files/{config,cmdline}.txt "${FILES_SHARED}"/boot
 }

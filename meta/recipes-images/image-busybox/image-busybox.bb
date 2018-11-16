@@ -48,7 +48,7 @@ step_build() {
   mkfs.vfat -n BOOT -S 512 -C fat.img $(expr $block_size / 2)
 
   mcopy -i fat.img -s rootfs.sqfs ::rootfs.sqfs
-  for file in "${SHARED}"/linux/{kernel8.img,bcm2710-rpi-3-b.dtb} $(ls "${SHARED}"/boot/*); do
+  for file in "${SHARED}"/linux/{kernel8.img,bcm2710-rpi-3-b.dtb,COPYING.linux} "${SHARED}"/boot/*; do
     mcopy -i fat.img -s $file ::$(basename $file)
   done
 
