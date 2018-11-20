@@ -3,12 +3,10 @@ image: typedivision/arch-micro:latest
 variables:
   GIT_SUBMODULE_STRATEGY: normal
 
-build-target:
+build-images:
   stage: build
   script:
-    - ./pacstage-init.sh
-    - cd build
-    - PATH=../bitbake/bin:$PATH bitbake image-busybox
+    - ci/build.sh
   artifacts:
     paths:
       - build/deploy/
