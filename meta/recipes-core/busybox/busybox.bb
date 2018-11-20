@@ -9,8 +9,7 @@ SRC_URI = " \
   file://${P}_${TARGET_ARCH}.config \
 "
 
-HOST_DEPENDS = "make gcc flex"
-
+HOST_DEPENDS = "make gcc"
 DEPENDS = "crosstool-ng"
 
 inherit pacman

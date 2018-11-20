@@ -15,7 +15,7 @@ WRAP_SYSBASE = 'bwrap \
   --bind "${WORKDIR}" "${WORKDIR}" \
   --bind "${DL_DIR}" "${DL_DIR}" \
   --bind "${REPO}" "${REPO}" \
-  --bind "${SHARED}" "${SHARED}" \
+  --bind "${SHARE}" "${SHARE}" \
   --setenv WRAP 1 \
 '
 
@@ -83,8 +83,8 @@ setup_system() {
   cp -a "$sysbase_setup"/. "${SYSBASE}"
   pacman -r "${SYSBASE}" --cachedir="${DL_DIR}"/pkgcache -S --noconfirm --needed ${HOST_DEPENDS}
   for dep in ${BUILD_DEPENDS}; do
-    if [ -e "${STAGE}"/$dep/$dep.install.tar.gz ]; then
-      tar -xf "${STAGE}"/$dep/$dep.install.tar.gz -C "${SYSBASE}"
+    if [ -e "${STAGE}"/$dep/$dep.setup.tar.gz ]; then
+      tar -xf "${STAGE}"/$dep/$dep.setup.tar.gz -C "${SYSBASE}"
     fi
   done
 }
@@ -102,8 +102,8 @@ addtask build after do_setup
 do_build[deptask] = "do_deploy"
 do_build[rdeptask] = "do_repo_add"
 do_build[prefuncs] = "unpack"
-do_build[cleandirs] = "${FILES_INSTALL} ${FILES_SHARED} ${FILES_DEPLOY}"
-do_build[dirs] = "${REPO} ${SHARED}"
+do_build[cleandirs] = "${FILES_SETUP} ${FILES_SHARE} ${FILES_DEPLOY}"
+do_build[dirs] = "${REPO} ${SHARE}"
 
 do_build() {
   if ! [ "$WRAP" ]; then
@@ -139,7 +139,7 @@ do_devshell[nostamp] = "1"
 do_devshell() {
   if ! [ "$WRAP" ]; then
     if ! tmux info &> /dev/null; then
-      echo "tmux is not running"
+      bbmsg WARNING "tmux is not running"
       return 1
     fi
     tmux split-window "
@@ -153,6 +153,7 @@ do_devshell() {
 }
 
 base_step_devshell() {
+  cd "${SRCBASE}"
   exec bash
 }
 
@@ -161,11 +162,11 @@ do_stage[cleandirs] = "${STAGE}/${PN}"
 do_stage[postfuncs] = "teardown"
 
 do_stage() {
-  if [ "$(ls ${FILES_INSTALL})" ]; then
-    tar -czf "${STAGE}/${PN}/${PN}".install.tar.gz -C "${FILES_INSTALL}" .
+  if [ "$(ls ${FILES_SETUP})" ]; then
+    tar -czf "${STAGE}/${PN}/${PN}".setup.tar.gz -C "${FILES_SETUP}" .
   fi
-  if [ "$(ls ${FILES_SHARED})" ]; then
-    tar -czf "${STAGE}/${PN}/${PN}".shared.tar.gz -C "${FILES_SHARED}" .
+  if [ "$(ls ${FILES_SHARE})" ]; then
+    tar -czf "${STAGE}/${PN}/${PN}".share.tar.gz -C "${FILES_SHARE}" .
   fi
   if [ "$(ls ${FILES_DEPLOY})" ]; then
     tar -czf "${STAGE}/${PN}/${PN}".deploy.tar.gz -C "${FILES_DEPLOY}" .
@@ -182,14 +183,14 @@ python teardown() {
 }
 
 addtask deploy after do_stage
-do_deploy[dirs] = "${SHARED} ${DEPLOY}"
+do_deploy[dirs] = "${SHARE} ${DEPLOY}"
 
 do_deploy() {
   if [ -e "${STAGE}"/${PN}/${PN}.deploy.tar.gz ]; then 
     tar -xhf "${STAGE}"/${PN}/${PN}.deploy.tar.gz -C "${DEPLOY}"
   fi
-  if [ -e "${STAGE}"/${PN}/${PN}.shared.tar.gz ]; then 
-    tar -xhf "${STAGE}"/${PN}/${PN}.shared.tar.gz -C "${SHARED}"
+  if [ -e "${STAGE}"/${PN}/${PN}.share.tar.gz ]; then 
+    tar -xhf "${STAGE}"/${PN}/${PN}.share.tar.gz -C "${SHARE}"
   fi
 } 
 

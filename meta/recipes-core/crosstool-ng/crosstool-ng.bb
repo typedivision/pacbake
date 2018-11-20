@@ -41,11 +41,11 @@ step_build() {
   cd "${SRCBASE}"/build
 
   unset CC CXX AR RANLIB
-  export TARBALLS_DIR="${DL_DIR}"/ct-ng
+  export CT_DL_DIR="${DL_DIR}"/ct-ng
   export CT_PREFIX="${XPATH}"
   export PATH="${SRCBASE}"/local/bin:$PATH
 
-  mkdir -p "$TARBALLS_DIR"
+  mkdir -p "$CT_DL_DIR"
   cat "${SRCBASE}"/${P}_${TARGET_ARCH}.config > .config
 
   if [ "$1" = devshell ]; then
@@ -57,25 +57,25 @@ step_build() {
 }
 
 step_install() {
-  mkdir -p "${FILES_INSTALL}"/${XPATH}
+  mkdir -p "${FILES_SETUP}"/${XPATH}
   cp -a "${SRCBASE}"/${XPATH}/bin \ 
         "${SRCBASE}"/${XPATH}/lib \ 
         "${SRCBASE}"/${XPATH}/libexec \ 
-        "${FILES_INSTALL}"/${XPATH}
+        "${FILES_SETUP}"/${XPATH}
   
-  mkdir -p "${FILES_INSTALL}"/${XPATH}/${TARGET_SYS}
+  mkdir -p "${FILES_SETUP}"/${XPATH}/${TARGET_SYS}
   cp -a "${SRCBASE}"/${XPATH}/${TARGET_SYS}/bin \
         "${SRCBASE}"/${XPATH}/${TARGET_SYS}/sysroot \
-        "${FILES_INSTALL}"/${XPATH}/${TARGET_SYS}
-
-  cp -a "${FILES_INSTALL}"/${XPATH} "${SYSBASE}"
+        "${FILES_SETUP}"/${XPATH}/${TARGET_SYS}
 }
 
 step_package_sysroot() {
   cd "${SRCBASE}"/${XPATH}/${TARGET_SYS}/sysroot
 
-  mkdir -p  "${PKGDIR}"/lib
+  mkdir -p "${PKGDIR}"/lib "${PKGDIR}"/usr/lib
   cp -r lib/. usr/lib/. "${PKGDIR}"/lib
+  ln -s lib "${PKGDIR}"/lib64
+  ln -s lib "${PKGDIR}"/usr/lib64
 
   for ext in a o map pc py; do
     find "${PKGDIR}" -name "*.$ext" -exec rm {} \;
