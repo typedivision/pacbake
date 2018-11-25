@@ -1,16 +1,8 @@
 PKGBASE = "${WORKDIR}/pkgbase"
 PKGDIR  = "$pkgdir"
-
-LICDIR = "${PKGDIR}/usr/share/licenses/${P}"
+LICDIR  = "${PKGDIR}/usr/share/licenses/${P}"
 
 HOST_DEPENDS += "pacman fakeroot"
-
-python () {
-    pkgname = (d.getVar("PACKAGE") or "").split()
-    if len(pkgname) >1:
-        for p in pkgname:
-            d.appendVarFlag("do_package", "vardeps", " package_" + p)
-}
 
 addtask package after do_build before do_stage
 do_package[cleandirs] = "${PKGBASE}"
@@ -20,6 +12,7 @@ python() {
     if len(pkgname) > 1:
         for p in pkgname:
             d.appendVarFlag("do_package", "vardeps", " step_package_" + p)
+            d.appendVar("PROVIDES", " " + p)
 }
 
 python do_package() {
@@ -72,10 +65,11 @@ do_repo_add() {
     if [ -e "$pkg" ]; then
       local pkgname=$(basename "$pkg")
       cp "$pkg" "${REPO}"
-      exec 200>"${REPO}"/.lock
-      flock 200
-      repo-remove "${REPO}"/target.db.tar.gz ${pkgname%-*-*-*} 2>/dev/null || true
-      repo-add "${REPO}"/target.db.tar.gz "${REPO}"/$pkgname
+      (
+        flock 200
+        repo-remove "${REPO}"/target.db.tar.gz ${pkgname%-*-*-*} 2>/dev/null || true
+        repo-add "${REPO}"/target.db.tar.gz "${REPO}"/$pkgname
+      ) 200>"${REPO}"/.lock
     fi
   done
 }

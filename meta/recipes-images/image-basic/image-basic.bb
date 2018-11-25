@@ -3,8 +3,7 @@ PV = "1.0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-DEPENDS = "linux-rpi"
-RDEPENDS = "sysroot sysdebug busybox pacman"
+DEPENDS = "linux-rpi sysroot sysdebug busybox pacman"
 
 BUILD_AS_ROOT = "1"
 
@@ -31,7 +30,7 @@ step_build() {
     echo 'exec /bin/sh'
   } > rootfs/sbin/init
   chmod 755 rootfs/sbin/init
-  
+
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image
   cp rootfs.sqfs "${FILES_DEPLOY}"/image/rootfs-basic.sqfs
@@ -54,4 +53,22 @@ step_build() {
 
   dd if=fat.img of=$img conv=notrunc seek=1 bs=1M
   cp $img "${FILES_DEPLOY}"/image/$img
+
+  mkdir -p "${STAGE}"/${PN}
+  tar -czf "${FILES_SHARE}"/basic.sdk.tar.gz -C "${SYSBASE}" ${SDK_PREFIX}
+}
+
+step_deploy() {
+  mkdir -p "${SRCBASE}"/sdk-docker
+  cd "${SRCBASE}"/sdk-docker
+
+  cp "${SHARE}"/basic.sdk.tar.gz sdk.tar.gz
+  {
+    echo "FROM typedivision/arch-micro"
+    echo "ADD sdk.tar.gz /"
+  } > Dockerfile
+
+  pacman -S --needed --noconfirm docker
+  docker rmi sdk-basic-${TARGET_VENDOR} || true
+  docker build -t sdk-basic-${TARGET_VENDOR} .
 }

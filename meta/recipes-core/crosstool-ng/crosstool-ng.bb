@@ -42,7 +42,7 @@ step_build() {
 
   unset CC CXX AR RANLIB
   export CT_DL_DIR="${DL_DIR}"/ct-ng
-  export CT_PREFIX="${XPATH}"
+  export CT_PREFIX="${SDK_PREFIX}"
   export PATH="${SRCBASE}"/local/bin:$PATH
 
   mkdir -p "$CT_DL_DIR"
@@ -53,24 +53,20 @@ step_build() {
   fi
 
   ct-ng build
-  cp -a --parents "${XPATH}" "${SRCBASE}"
 }
 
 step_install() {
-  mkdir -p "${FILES_SETUP}"/${XPATH}
-  cp -a "${SRCBASE}"/${XPATH}/bin \ 
-        "${SRCBASE}"/${XPATH}/lib \ 
-        "${SRCBASE}"/${XPATH}/libexec \ 
-        "${FILES_SETUP}"/${XPATH}
+  cd ${SDK_PREFIX}
+  mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}
+  cp -a bin lib libexec "${FILES_SETUP}"/${SDK_PREFIX}
   
-  mkdir -p "${FILES_SETUP}"/${XPATH}/${TARGET_SYS}
-  cp -a "${SRCBASE}"/${XPATH}/${TARGET_SYS}/bin \
-        "${SRCBASE}"/${XPATH}/${TARGET_SYS}/sysroot \
-        "${FILES_SETUP}"/${XPATH}/${TARGET_SYS}
+  cd ${SDK_PREFIX}/${TARGET_SYS}
+  mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}
+  cp -a bin sysroot "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}
 }
 
 step_package_sysroot() {
-  cd "${SRCBASE}"/${XPATH}/${TARGET_SYS}/sysroot
+  cd ${SDK_PREFIX}/${TARGET_SYS}/sysroot
 
   mkdir -p "${PKGDIR}"/lib "${PKGDIR}"/usr/lib
   cp -r lib/. usr/lib/. "${PKGDIR}"/lib
@@ -89,14 +85,14 @@ step_package_sysroot() {
 
   mkdir -p "${PKGDIR}"/usr/share/licenses
   for pkg in expat gcc glibc linux ncurses; do
-    cp -r "${SRCBASE}"/${XPATH}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+    cp -r ${SDK_PREFIX}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
   done
 
   find "${PKGDIR}" -type d -exec chmod 755 {} \;
 }
 
 step_package_sysdebug() {
-  cd "${SRCBASE}"/${XPATH}/${TARGET_SYS}
+  cd ${SDK_PREFIX}/${TARGET_SYS}
 
   mkdir -p "${PKGDIR}"/opt
   cp -r debug-root/usr/bin "${PKGDIR}"/opt
@@ -106,7 +102,7 @@ step_package_sysdebug() {
 
   mkdir -p "${PKGDIR}"/usr/share/licenses
   for pkg in gdb strace; do
-    cp -r "${SRCBASE}"/${XPATH}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+    cp -r ${SDK_PREFIX}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
   done
 
   find "${PKGDIR}" -type d -exec chmod 755 {} \;

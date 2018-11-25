@@ -18,7 +18,7 @@ step_build() {
 
   [ ${TARGET_ARCH} == aarch64 ] && target='linux-aarch64'
 
-  ./Configure --prefix="${XROOT}"/usr \
+  ./Configure --prefix="${SDK_SYSROOT}"/usr \
     shared $target
 
   make
@@ -27,7 +27,7 @@ step_build() {
 }
 
 step_package() {
-  cd "${SRCBASE}"/setup/${XROOT}
+  cd "${SRCBASE}"/setup/${SDK_SYSROOT}
   find usr/lib -name "*.so*" -exec cp --parents -a {} "${PKGDIR}" \;
 
   install -Dm644 "${SRCDIR}"/LICENSE -t "${LICDIR}"

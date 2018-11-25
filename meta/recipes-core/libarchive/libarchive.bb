@@ -18,7 +18,7 @@ step_build() {
 
   ./configure \
     --host=${TARGET_SYS} \
-    --prefix=${XROOT}/usr \
+    --prefix=${SDK_SYSROOT}/usr \
     --without-xml2 \
     --without-expat
 
@@ -28,7 +28,7 @@ step_build() {
 }
 
 step_package() {
-  cd "${SRCBASE}"/setup/${XROOT}
+  cd "${SRCBASE}"/setup/${SDK_SYSROOT}
   find usr/lib -name "*.so*" -exec cp --parents -a {} "${PKGDIR}" \;
 
   install -Dm644 "${SRCDIR}"/COPYING -t "${LICDIR}"

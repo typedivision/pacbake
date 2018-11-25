@@ -6,6 +6,9 @@ FILESPATH = "${FILE_DIRNAME}"
 
 HOST_DEPENDS_BASE = "shadow coreutils findutils diffutils bash tar gzip sed grep gawk which file patch"
 
+DEPENDS_append = " ${RDEPENDS}"
+RDEPENDS = ""
+
 WRAP_SYSBASE = 'bwrap \
   --bind "${SYSBASE}" / \
   --proc /proc \
@@ -55,7 +58,9 @@ python do_fetch() {
 addtask setup before do_build
 do_setup[deptask] = "do_stage"
 do_setup[cleandirs] = "${SYSBASE}"
+do_setup[dirs] = "${COMMON}"
 do_setup[vardepsexclude] += "BB_TASKDEPDATA"
+do_setup[vardeps] += "DEPENDS"
 
 python do_setup() {
     taskdepdata = d.getVar("BB_TASKDEPDATA", False)
@@ -73,17 +78,22 @@ python do_setup() {
 setup_system() {
   local sysbase_setup="${COMMON}"/sysbase_setup
   if ! [ -d "$sysbase_setup" ]; then
-    rm -rf "$sysbase_setup.tmp"
-    mkdir -p "$sysbase_setup.tmp"
-    pacstrap "$sysbase_setup.tmp" ${HOST_DEPENDS_BASE} --cachedir="${DL_DIR}"/pkgcache
-    echo "en_US.UTF-8 UTF-8" > "$sysbase_setup.tmp"/etc/locale.gen
-    bwrap --bind "$sysbase_setup.tmp" / sh -c "locale-gen; useradd -u 1000 user"
-    mv "$sysbase_setup.tmp" "$sysbase_setup"
+    (
+      flock 200
+      [ -d "$sysbase_setup" ] && exit
+      rm -rf "$sysbase_setup.tmp"
+      mkdir -p "$sysbase_setup.tmp"
+      pacstrap "$sysbase_setup.tmp" ${HOST_DEPENDS_BASE} --cachedir="${DL_DIR}"/pkgcache
+      echo "en_US.UTF-8 UTF-8" > "$sysbase_setup.tmp"/etc/locale.gen
+      bwrap --bind "$sysbase_setup.tmp" / sh -c "locale-gen; useradd -u 1000 user"
+      mv "$sysbase_setup.tmp" "$sysbase_setup"
+    ) 200>"$sysbase_setup.lock"
   fi
   cp -a "$sysbase_setup"/. "${SYSBASE}"
   pacman -r "${SYSBASE}" --cachedir="${DL_DIR}"/pkgcache -S --noconfirm --needed ${HOST_DEPENDS}
   for dep in ${BUILD_DEPENDS}; do
     if [ -e "${STAGE}"/$dep/$dep.setup.tar.gz ]; then
+      bbmsg INFO "install $dep"
       tar -xf "${STAGE}"/$dep/$dep.setup.tar.gz -C "${SYSBASE}"
     fi
   done
@@ -99,8 +109,7 @@ python unpack() {
 }
 
 addtask build after do_setup
-do_build[deptask] = "do_deploy"
-do_build[rdeptask] = "do_repo_add"
+do_build[deptask] = "do_deploy do_repo_add"
 do_build[prefuncs] = "unpack"
 do_build[cleandirs] = "${FILES_SETUP} ${FILES_SHARE} ${FILES_DEPLOY}"
 do_build[dirs] = "${REPO} ${SHARE}"
@@ -192,7 +201,12 @@ do_deploy() {
   if [ -e "${STAGE}"/${PN}/${PN}.share.tar.gz ]; then 
     tar -xhf "${STAGE}"/${PN}/${PN}.share.tar.gz -C "${SHARE}"
   fi
+  step_deploy
 } 
+
+base_step_deploy() {
+  :
+}
 
 addtask all after do_deploy
 do_all[noexec] = "1"
@@ -201,4 +215,4 @@ do_all() {
   :
 }
 
-EXPORT_FUNCTIONS step_prepare step_build step_install step_devshell
+EXPORT_FUNCTIONS step_prepare step_build step_install step_devshell step_deploy

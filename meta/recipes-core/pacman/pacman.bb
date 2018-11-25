@@ -10,7 +10,7 @@ SRC_URI = " \
 
 HOST_DEPENDS = "make pkgconfig"
 
-DEPENDS = "crosstool-ng ${RDEPENDS}"
+DEPENDS = "crosstool-ng"
 RDEPENDS = "libarchive openssl"
 
 inherit pacman

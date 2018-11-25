@@ -3,8 +3,7 @@ PV = "1.0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-DEPENDS = "linux-rpi"
-RDEPENDS = "busybox"
+DEPENDS = "linux-rpi busybox"
 
 BUILD_AS_ROOT = "1"
 
