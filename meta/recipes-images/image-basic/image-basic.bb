@@ -68,7 +68,7 @@ step_deploy() {
     echo "ADD sdk.tar.gz /"
   } > Dockerfile
 
-  pacman -S --needed --noconfirm docker
+  pacman -S --needed --noconfirm --cachedir="${PCACHE}" docker
   docker rmi sdk-basic-${TARGET_VENDOR} || true
   docker build -t sdk-basic-${TARGET_VENDOR} .
 }

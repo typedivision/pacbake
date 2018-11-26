@@ -4,7 +4,7 @@ CMDPATH=$(cd "$(dirname $0)" && pwd)
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo "Initialize the pacstage build environment."
-  echo "usage: ${0##*/}"
+  echo "usage: ${0##*/} [-C <pkgcache>]"
   echo && exit 0
 fi
 
@@ -13,8 +13,21 @@ if ! [ "$(command -v pacman)" ]; then
   exit 1
 fi
 
+while getopts 'C:' opt; do
+  case $opt in
+    C) PKGCACHE=$OPTARG;;
+    ?) exit 1
+  esac
+done
+
+PACOPTS="--noconfirm --needed"
+
+if [ "$PKGCACHE" ]; then
+  PACOPTS+=" --cachedir $PKGCACHE"
+fi
+
 echo "==> Install host tools"
-pacman -Sy --noconfirm --needed arch-install-scripts python3 wget ca-certificates tar gzip bzip2 xz unzip git bubblewrap tmux vim
+pacman -Sy $PACOPTS arch-install-scripts python3 wget ca-certificates tar gzip bzip2 xz unzip git bubblewrap tmux vim
 
 BUILD_DIR="$CMDPATH"/build
 if ! [ -d "$BUILD_DIR" ]; then
