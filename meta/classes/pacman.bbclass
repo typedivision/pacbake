@@ -57,7 +57,7 @@ pkgbuild() {
   ${WRAP_SYSBASE_USER} makepkg -Rdfc --config makepkg.conf
 }
 
-addtask repo_add after do_stage before do_all
+addtask repo_add after do_stage before do_deploy
 do_repo_add[dirs] = "${REPO}"
 
 do_repo_add() {

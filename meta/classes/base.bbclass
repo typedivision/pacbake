@@ -109,7 +109,7 @@ python unpack() {
 }
 
 addtask build after do_setup
-do_build[deptask] = "do_deploy do_repo_add"
+do_build[deptask] = "do_deploy"
 do_build[prefuncs] = "unpack"
 do_build[cleandirs] = "${FILES_SETUP} ${FILES_SHARE} ${FILES_DEPLOY}"
 do_build[dirs] = "${REPO} ${SHARE}"
@@ -192,6 +192,7 @@ python teardown() {
 }
 
 addtask deploy after do_stage
+do_deploy[deptask] = "do_deploy"
 do_deploy[dirs] = "${SHARE} ${DEPLOY}"
 
 do_deploy() {
