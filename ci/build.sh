@@ -1,4 +1,7 @@
+#!/bin/sh -e
+#
 # CI build script
+#
 CMDPATH=$(cd "$(dirname $0)" && pwd)
 BASEDIR=$(realpath $CMDPATH/..)
 

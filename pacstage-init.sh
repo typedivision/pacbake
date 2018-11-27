@@ -1,5 +1,7 @@
-#!/bin/sh
-# Initialize the pacstage build environment.
+#!/bin/sh -e
+#
+# Initialize the pacstage build environment
+#
 CMDPATH=$(cd "$(dirname $0)" && pwd)
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -42,6 +44,6 @@ if ! [ "$(command -v bitbake)" ]; then
   echo "> You may need to set       PATH=$CMDPATH/bitbake/bin:\$PATH"
 fi
 echo "> Finally go to             $BUILD_DIR"
-echo "> And start building with   bitbake <recipe>"
+echo "> And start the build with  bitbake <recipe>"
 echo "> Get available recipes by  bitbake -s"
 echo ">"

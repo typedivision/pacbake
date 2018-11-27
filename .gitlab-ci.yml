@@ -7,6 +7,9 @@ build-images:
   stage: build
   script:
     - ci/build.sh
+  after_script:
+    - ci/storelog.sh
   artifacts:
+    when: always
     paths:
       - build/deploy/
