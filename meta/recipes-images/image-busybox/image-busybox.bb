@@ -1,5 +1,5 @@
 PD = "Minimal image with busybox"
-PV = "1.0"
+PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 

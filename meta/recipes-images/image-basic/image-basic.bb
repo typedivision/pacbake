@@ -1,9 +1,10 @@
 PD = "Basic image with core packages"
-PV = "1.0"
+PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-DEPENDS = "linux-rpi sysroot sysdebug busybox pacman"
+IMAGE_PKGS = "sysroot sysdebug busybox pacman neoinit"
+DEPENDS = "linux-rpi ${IMAGE_PKGS}"
 
 BUILD_AS_ROOT = "1"
 
@@ -18,9 +19,10 @@ step_build() {
   } > pacman.conf
 
   mkdir rootfs
-  pacstrap -GMC pacman.conf rootfs sysroot sysdebug busybox pacman
+  pacstrap -GMC pacman.conf rootfs ${IMAGE_PKGS}
 
   rm -rf rootfs/var/cache
+  install -d rootfs/etc/minit/default
   {
     echo '#!/bin/sh'
     echo 'mount -t proc proc /proc -o nosuid,noexec,nodev'
@@ -28,8 +30,8 @@ step_build() {
     echo 'mount -t tmpfs tmp /tmp -o nosuid,nodev,size=10M'
     echo 'export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/bin'
     echo 'exec /bin/sh'
-  } > rootfs/sbin/init
-  chmod 755 rootfs/sbin/init
+  } > rootfs/etc/minit/default/run
+  chmod 755 rootfs/etc/minit/default/run
 
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image
