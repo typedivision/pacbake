@@ -58,7 +58,7 @@ python do_fetch() {
 addtask setup before do_build
 do_setup[deptask] = "do_stage"
 do_setup[cleandirs] = "${SYSBASE}"
-do_setup[dirs] = "${COMMON}"
+do_setup[dirs] = "${LOCAL}"
 do_setup[vardepsexclude] += "BB_TASKDEPDATA"
 do_setup[vardeps] += "DEPENDS"
 
@@ -76,7 +76,7 @@ python do_setup() {
 }
 
 setup_system() {
-  local sysbase_setup="${COMMON}"/sysbase_setup
+  local sysbase_setup="${LOCAL}"/sysbase_setup
   if ! [ -d "$sysbase_setup" ]; then
     (
       flock 200
