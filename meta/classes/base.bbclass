@@ -3,6 +3,7 @@ BB_DEFAULT_TASK ?= "all"
 inherit logging sstate
 
 FILESPATH = "${FILE_DIRNAME}"
+PKGCACHE ?= "${DL_DIR}/pkgcache"
 
 HOST_DEPENDS_BASE = "shadow coreutils findutils diffutils bash tar gzip sed grep gawk which file patch"
 
@@ -83,14 +84,14 @@ setup_system() {
       [ -d "$sysbase_setup" ] && exit
       rm -rf "$sysbase_setup.tmp"
       mkdir -p "$sysbase_setup.tmp"
-      pacstrap "$sysbase_setup.tmp" ${HOST_DEPENDS_BASE} --cachedir="${PCACHE}"
+      pacstrap "$sysbase_setup.tmp" ${HOST_DEPENDS_BASE} --cachedir="${PKGCACHE}"
       echo "en_US.UTF-8 UTF-8" > "$sysbase_setup.tmp"/etc/locale.gen
       bwrap --bind "$sysbase_setup.tmp" / sh -c "locale-gen; useradd -u 1000 user"
       mv "$sysbase_setup.tmp" "$sysbase_setup"
     ) 200>"$sysbase_setup.lock"
   fi
   cp -a "$sysbase_setup"/. "${SYSBASE}"
-  pacman -r "${SYSBASE}" --cachedir="${PCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
+  pacman -r "${SYSBASE}" --cachedir="${PKGCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
   for dep in ${BUILD_DEPENDS}; do
     if [ -e "${STAGE}"/$dep/$dep.setup.tar.gz ]; then
       bbmsg INFO "install $dep"
@@ -105,7 +106,6 @@ python unpack() {
     localdata = bb.data.createCopy(d)
     localdata.setVar("UNPACK", True)
     bb.build.exec_func("do_fetch", localdata)
-    os.chmod(d.getVar("DL_DIR"), 0o777)
 }
 
 addtask build after do_setup

@@ -14,8 +14,8 @@ cd $BASEDIR
 cd build
 {
   echo 'PCACHE = "/tmpstore/pkgcache"'
-  echo 'DL_DIR = "/tmpstore/bbDownload"'
-  echo 'SSTATE = "/tmpstore/bbState"'
+  echo 'DL_DIR = "/tmpstore/pacDownloads"'
+  echo 'SSTATE = "/tmpstore/pacState"'
 } > conf/local.conf
 
 bitbake image-busybox
