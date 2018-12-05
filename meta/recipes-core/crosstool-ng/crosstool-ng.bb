@@ -6,7 +6,7 @@ LICENSE = "GPL"
 
 SRC_URI = " \
   git://github.com/crosstool-ng/crosstool-ng;protocol=https \
-  file://${P}_${TARGET_ARCH}.config \
+  file://${P}_${TARGET_ALIAS}.config \
   file://0001-no-license-deployment-for-ct-itself.patch \
 "
 
@@ -46,7 +46,7 @@ step_build() {
   export PATH="${SRCBASE}"/local/bin:$PATH
 
   mkdir -p "$CT_DL_DIR"
-  cat "${SRCBASE}"/${P}_${TARGET_ARCH}.config > .config
+  cat "${SRCBASE}"/${P}_${TARGET_ALIAS}.config > .config
 
   if [ "$1" = devshell ]; then
     exec bash

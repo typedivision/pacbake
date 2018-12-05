@@ -6,7 +6,7 @@ LICENSE = "GPL"
 
 SRC_URI = " \
   https://www.busybox.net/downloads/${P}-${PV}.tar.bz2;md5sum=928919a21e34d5c5507d872a4fb7b9f4 \
-  file://${P}_${TARGET_ARCH}.config \
+  file://${P}_${TARGET_ALIAS}.config \
 "
 
 HOST_DEPENDS = "make gcc"
@@ -22,7 +22,7 @@ step_build() {
   cd "${SRCDIR}"
 
   export CROSS_COMPILE="${TARGET_SYS}-"
-  cat "${SRCBASE}"/${P}_${TARGET_ARCH}.config > .config
+  cat "${SRCBASE}"/${P}_${TARGET_ALIAS}.config > .config
 
   if [ "$1" = devshell ]; then
     exec bash

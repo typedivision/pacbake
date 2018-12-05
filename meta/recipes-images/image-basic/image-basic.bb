@@ -70,7 +70,8 @@ step_deploy() {
     echo "ADD sdk.tar.gz /"
   } > Dockerfile
 
+  local sdkimage=pactools-${TARGET_ALIAS}:basic
   pacman -S --needed --noconfirm --cachedir="${PKGCACHE}" docker
-  docker rmi sdk-basic-${TARGET_VENDOR} || true
-  docker build -t sdk-basic-${TARGET_VENDOR} .
+  docker rmi $sdkimage || true
+  docker build -t $sdkimage .
 }
