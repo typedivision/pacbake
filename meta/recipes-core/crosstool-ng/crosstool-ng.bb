@@ -59,7 +59,7 @@ step_install() {
   cd ${SDK_PREFIX}
   mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}
   cp -a bin lib libexec "${FILES_SETUP}"/${SDK_PREFIX}
-  
+
   cd ${SDK_PREFIX}/${TARGET_SYS}
   mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}
   cp -a bin sysroot "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}

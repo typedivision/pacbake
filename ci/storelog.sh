@@ -9,10 +9,10 @@ PATH=$BASEDIR/bitbake/bin:$PATH
 
 cd $BASEDIR/build
 
-PROGRESS_DIR=$(bitbake -e | grep "^BB_DIR=" | cut -d= -f2 | xargs)
+BAKE_DIR=$(bitbake -e | grep "^PACBAKE=" | cut -d= -f2 | xargs)
 DEPLOY_DIR=$(bitbake -e | grep "^DEPLOY=" | cut -d= -f2 | xargs)
 
-cd $PROGRESS_DIR
+cd $BAKE_DIR
 
 mkdir work.store
 find . -path "*/temp/log/*" -exec cp --parent {} work.store \;

@@ -30,7 +30,7 @@ step_build() {
     echo 'exec /bin/sh'
   } > rootfs/sbin/init
   chmod 755 rootfs/sbin/init
-  
+
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image
   cp rootfs.sqfs "${FILES_DEPLOY}"/image/rootfs-busybox.sqfs

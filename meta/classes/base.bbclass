@@ -116,7 +116,7 @@ do_build[dirs] = "${REPO} ${SHARE}"
 
 do_build() {
   if ! [ "$WRAP" ]; then
-    bbmsg NOTE "Executing Build Step"
+    bbmsg NOTE "Executing Build Task"
     if [ "${BUILD_AS_ROOT}" ]; then
       exec ${WRAP_SYSBASE} "$0"
     else
@@ -196,14 +196,14 @@ do_deploy[deptask] = "do_deploy"
 do_deploy[dirs] = "${SHARE} ${DEPLOY}"
 
 do_deploy() {
-  if [ -e "${STAGE}"/${PN}/${PN}.deploy.tar.gz ]; then 
+  if [ -e "${STAGE}"/${PN}/${PN}.deploy.tar.gz ]; then
     tar -xhf "${STAGE}"/${PN}/${PN}.deploy.tar.gz -C "${DEPLOY}"
   fi
-  if [ -e "${STAGE}"/${PN}/${PN}.share.tar.gz ]; then 
+  if [ -e "${STAGE}"/${PN}/${PN}.share.tar.gz ]; then
     tar -xhf "${STAGE}"/${PN}/${PN}.share.tar.gz -C "${SHARE}"
   fi
   step_deploy
-} 
+}
 
 base_step_deploy() {
   :

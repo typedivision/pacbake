@@ -41,7 +41,7 @@ step_install() {
   install -D arch/arm64/boot/Image "${FILES_DEPLOY}"/linux/kernel8.img
   cp arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb "${FILES_DEPLOY}"/linux
   cp COPYING "${FILES_DEPLOY}"/linux/COPYING.linux
-  
+
   install -D arch/arm64/boot/Image "${FILES_SHARE}"/linux/kernel8.img
   cp arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb "${FILES_SHARE}"/linux
   cp COPYING "${FILES_SHARE}"/linux/COPYING.linux

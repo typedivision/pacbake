@@ -53,7 +53,7 @@ pkgbuild() {
     'PKGEXT=".pkg.tar.xz"' \
     'strip() { ${TARGET_SYS}-strip "$@"; }' \
     'objcopy() { ${TARGET_SYS}-objcopy "$@"; }'
- 
+
   ${WRAP_SYSBASE_USER} makepkg -Rdfc --config makepkg.conf
 }
 

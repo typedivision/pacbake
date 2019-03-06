@@ -5,18 +5,19 @@
 CMDPATH=$(cd "$(dirname $0)" && pwd)
 BASEDIR=$(realpath $CMDPATH/..)
 
+STORE=/store
+PKGCACHE=$STORE/pkgcache
+
 PATH=$BASEDIR/bitbake/bin:$PATH
 
 cd $BASEDIR
-
-./pacstage-init.sh -C /tmpstore/pkgcache
+./pacstage-init.sh -C "$PKGCACHE"
 
 cd build
 {
-  echo 'PCACHE = "/tmpstore/pkgcache"'
-  echo 'DL_DIR = "/tmpstore/pacDownloads"'
-  echo 'SSTATE = "/tmpstore/pacState"'
+  echo 'PKGCACHE   = "'$PKGCACHE'"'
+  echo 'DL_DIR_TOP = "'$STORE'"'
+  echo 'SSTATE_TOP = "'$STORE'"'
 } > conf/local.conf
 
-bitbake image-busybox
-bitbake image-basic
+bitbake world

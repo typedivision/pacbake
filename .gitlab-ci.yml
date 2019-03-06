@@ -12,4 +12,4 @@ build-images:
   artifacts:
     when: always
     paths:
-      - build/deploy/
+      - build/pacDeploy
