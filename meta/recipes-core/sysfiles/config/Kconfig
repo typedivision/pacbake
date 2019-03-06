@@ -1,0 +1,9 @@
+menu "System"
+
+config SYS_HOSTNAME
+    string "system hostname"
+    default ""
+    help
+      The system's hostname.
+
+endmenu

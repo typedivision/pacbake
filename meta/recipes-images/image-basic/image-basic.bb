@@ -3,8 +3,8 @@ PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-IMAGE_PKGS = "sysroot sysdebug busybox pacman neoinit"
-DEPENDS = "linux-rpi ${IMAGE_PKGS}"
+IMAGE_PKGS = "sysroot sysdebug sysfiles linux-rpi pacman"
+DEPENDS = "${IMAGE_PKGS}"
 
 BUILD_AS_ROOT = "1"
 
@@ -22,16 +22,6 @@ step_build() {
   pacstrap -GMC pacman.conf rootfs ${IMAGE_PKGS}
 
   rm -rf rootfs/var/cache
-  install -d rootfs/etc/minit/default
-  {
-    echo '#!/bin/sh'
-    echo 'mount -t proc proc /proc -o nosuid,noexec,nodev'
-    echo 'mount -t sysfs sys /sys -o nosuid,noexec,nodev'
-    echo 'mount -t tmpfs tmp /tmp -o nosuid,nodev,size=10M'
-    echo 'export PATH=/sbin:/bin:/usr/sbin:/usr/bin:/opt/bin'
-    echo 'exec /bin/sh'
-  } > rootfs/etc/minit/default/run
-  chmod 755 rootfs/etc/minit/default/run
 
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image
@@ -39,9 +29,9 @@ step_build() {
 
   local img=basic.img
   local img_size=32
-  dd if=/dev/zero of=$img bs=1M count=$(expr $img_size + 2)
+  dd if=/dev/zero of=$img bs=1M count=$(expr $img_size + 1)
   {
-    echo -e "n\np\n1\n\n+"$img_size"M\nt\nb"
+    echo -e "n\np\n1\n\n\nt\nb"
     echo -e "p\nw"
   } | fdisk -c -u $img
 

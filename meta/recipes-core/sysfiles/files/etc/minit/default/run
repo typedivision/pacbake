@@ -1,0 +1,32 @@
+#!/bin/sh
+
+mount -t proc proc /proc -o nosuid,noexec,nodev
+mount -t sysfs sysfs /sys -o nosuid,noexec,nodev
+mount -t tmpfs tmpfs /tmp -o nosuid,nodev,noatime,size=10M
+mount -t tmpfs tmpfs /volatile -o nosuid,nodev,noatime,size=5M
+
+if ! fdisk -l | grep -q mmcblk0p2; then
+  echo -e "n\np\n2\n\n+32M\nw\n" | fdisk /dev/mmcblk0
+fi
+
+if ! mount -t ext4 /dev/mmcblk0p2 /data; then
+  mkfs.ext4 /dev/mmcblk0p2
+  mount -t ext4 /dev/mmcblk0p2 /data
+fi
+
+for d in etc etc.wd var var.wd; do
+  mkdir /volatile/$d
+done
+mount -t overlay -o lowerdir=/etc,upperdir=/volatile/etc,workdir=/volatile/etc.wd overlay /etc
+mount -t overlay -o lowerdir=/var,upperdir=/volatile/var,workdir=/volatile/var.wd overlay /var
+
+if [ -e /data/sysconfig ]; then
+  cp /data/sysconfig /etc/config/.config
+fi
+
+HOSTNAME="$(cat /etc/sysconfig | grep SYS_HOSTNAME | cut -d= -f2 | xargs)"
+if [ "$HOSTNAME" ]; then
+  hostname "$HOSTNAME"
+fi
+
+exec /sbin/getty -L 115200 /dev/ttyS0 vt100

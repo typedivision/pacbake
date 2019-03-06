@@ -95,7 +95,7 @@ setup_system() {
   for dep in ${BUILD_DEPENDS}; do
     if [ -e "${STAGE}"/$dep/$dep.setup.tar.gz ]; then
       bbmsg INFO "install $dep"
-      tar -xf "${STAGE}"/$dep/$dep.setup.tar.gz -C "${SYSBASE}"
+      tar -h -xf "${STAGE}"/$dep/$dep.setup.tar.gz -C "${SYSBASE}"
     fi
   done
 }

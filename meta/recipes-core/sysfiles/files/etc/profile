@@ -1,0 +1,2 @@
+export PS1='$HOSTNAME $PWD # '
+export PATH="/sbin:/bin:/usr/bin:/usr/sbin:/opt/bin"

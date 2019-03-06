@@ -1,6 +1,17 @@
+EXCLUDE_FROM_WORLD = "1"
+
+deltask do_package do_repo_add
+
 python() {
     pn = d.getVar("PN")
-    depends = d.getVar("DEPENDS")
+
+    host_depends = d.getVar("HOST_DEPENDS_native")
+    if host_depends is not None:
+        d.setVar("HOST_DEPENDS", host_depends)
+
+    depends = d.getVar("DEPENDS_native")
+    if depends is None:
+        depends = d.getVar("DEPENDS")
     if not depends:
         return
     nativedeps = []
