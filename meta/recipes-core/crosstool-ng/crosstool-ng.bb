@@ -73,10 +73,10 @@ step_package_sysroot() {
   ln -s lib "${PKGDIR}"/lib64
   ln -s lib "${PKGDIR}"/usr/lib64
 
-  for ext in a o map pc py; do
+  for ext in a o map pc py spec; do
     find "${PKGDIR}" -name "*.$ext" -exec rm {} \;
   done
-  rm -r "${PKGDIR}"/lib/{audit,gconv}
+  rm -r "${PKGDIR}"/lib/{audit,gconv,pkgconfig}
   rm "${PKGDIR}"/lib/lib*san.*
 
   mkdir -p "${PKGDIR}"/usr/bin

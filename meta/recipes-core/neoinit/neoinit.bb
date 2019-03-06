@@ -8,7 +8,7 @@ SRC_URI = " \
   git://github.com/typedivision/neoinit;protocol=https \
 "
 
-SRCREV = "559afcbe8a371bea8c7006973754dbdb6d93b7f5"
+SRCREV = "8f64c13fbebd4e7b070c65c465e6dcd29270cb54"
 
 HOST_DEPENDS = "make"
 
@@ -27,9 +27,8 @@ step_package() {
   install -d "${PKGDIR}"/{sbin,bin,etc/minit}
 
   cd "${SRCBASE}"/git
-  install minit pidfilehack write_proc hard-reboot "${PKGDIR}"/sbin
-  install -m 4750 shutdown "${PKGDIR}"/sbin
-  install msvc serdo "${PKGDIR}"/bin
+  install minit hard-reboot "${PKGDIR}"/sbin
+  install msvc "${PKGDIR}"/bin
   mkfifo -m 600 "${PKGDIR}"/etc/minit/{in,out}
   ln -s /sbin/minit "${PKGDIR}"/sbin/init
 

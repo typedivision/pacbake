@@ -6,7 +6,8 @@ LICENSE = "GPL"
 
 SRC_URI = " \
   https://www.busybox.net/downloads/${P}-${PV}.tar.bz2;md5sum=928919a21e34d5c5507d872a4fb7b9f4 \
-  file://${P}.config \
+  file://busybox.config \
+  file://pkg \
 "
 
 HOST_DEPENDS = "make gcc"
@@ -22,7 +23,7 @@ step_build() {
   cd "${SRCDIR}"
 
   export CROSS_COMPILE="${TARGET_SYS}-"
-  cat "${SRCBASE}"/${P}.config > .config
+  cat "${SRCBASE}"/busybox.config > .config
 
   if [ "$1" = devshell ]; then
     exec bash
@@ -34,5 +35,7 @@ step_build() {
 
 step_package() {
   cp -r "${SRCDIR}"/_install/. "${PKGDIR}"
+  cp -r "${SRCBASE}"/pkg/. "${PKGDIR}"
+
   install -Dm644 "${SRCDIR}"/LICENSE -t "${LICDIR}"
 }

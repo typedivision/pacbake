@@ -27,11 +27,14 @@ step_build() {
     --disable-doc
 
   make
+  make -C "${SRCDIR}" DESTDIR="${SRCBASE}"/setup install
 }
 
 step_package() {
-  make -C "${SRCDIR}" DESTDIR="${PKGDIR}" install
-  rm -r "${PKGDIR}"/usr/{share,include,lib/pkgconfig}
+  cd "${SRCBASE}"/setup
+  install -D usr/bin/pacman -t "${PKGDIR}"/usr/bin
+  install -D etc/pacman.conf -t "${PKGDIR}"/etc
+  find usr/lib -name "*.so*" -exec cp --parents -a {} "${PKGDIR}" \;
 
   install -Dm644 "${SRCDIR}"/COPYING -t "${LICDIR}"
 }

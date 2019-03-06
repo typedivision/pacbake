@@ -22,6 +22,7 @@ step_build() {
   pacstrap -GMC pacman.conf rootfs ${IMAGE_PKGS}
 
   rm -rf rootfs/var/cache
+  ln -sf /var/run rootfs/run
 
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image

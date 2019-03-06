@@ -7,3 +7,19 @@ config SYS_HOSTNAME
       The system's hostname.
 
 endmenu
+
+menu "Network"
+
+config NET_WIFI_SSID
+    string "wifi ssid"
+    default ""
+    help
+      The ssid to connect wifi interface to.
+
+config NET_WIFI_PASS
+    string "wifi passphrase"
+    default ""
+    help
+      Passphrase for wifi connection.
+
+endmenu
