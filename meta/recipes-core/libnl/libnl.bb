@@ -5,17 +5,14 @@ HOMEPAGE = "https://github.com/thom311/libnl/"
 LICENSE = "GPL"
 
 SRC_URI = " \
-  https://github.com/thom311/libnl/releases/download/${P}${@d.getVar('PV').replace('.','_')}/${P}-${PV}.tar.gz;md5sum=8f71910c03db363b41e2ea62057a4311 \
+  https://github.com/thom311/libnl/releases/download/${P}${@d.getVar('PV').replace('.','_')}/${S}.tar.gz;md5sum=8f71910c03db363b41e2ea62057a4311 \
 "
 
-HOST_DEPENDS = "make flex bison"
-
+HOST_DEPENDS = "flex bison"
 DEPENDS = "crosstool-ng"
 
-inherit pacman
-
 step_build() {
-  cd "${SRCDIR}"
+  cd "${SRCDIR}"/${S}
 
   ./configure \
     --host=${TARGET_SYS} \
@@ -23,13 +20,15 @@ step_build() {
     --sysconfdir=${SDK_SYSROOT}/etc \
     --disable-static
 
-  make DESTDIR="${SRCBASE}"/setup install
-  cp -a "${SRCBASE}"/setup/. "${FILES_SETUP}"
+  make
 }
 
-step_package() {
-  cd "${SRCBASE}"/setup/${SDK_SYSROOT}
-  find usr/lib -name "*.so*" -exec cp --parents -a {} "${PKGDIR}" \;
+step_install() {
+  cd "${SRCDIR}"/${S}
+  make DESTDIR="${FILES_DEVEL}" install
 
-  install -Dm644 "${SRCDIR}"/COPYING -t "${LICDIR}"
+  cd "${FILES_DEVEL}"/${SDK_SYSROOT}
+  find usr/lib -name "*.so*" -exec cp --parents {} "${FILES_PKG}" \;
+
+  install_license "${SRCDIR}"/${S}/COPYING "${FILES_PKG}"
 }

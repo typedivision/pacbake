@@ -3,17 +3,17 @@
 # CI store logfiles script
 #
 CMDPATH=$(cd "$(dirname $0)" && pwd)
-BASEDIR=$(realpath $CMDPATH/..)
+REPODIR=$(realpath "$CMDPATH"/..)
 
-PATH=$BASEDIR/bitbake/bin:$PATH
+PATH="$REPODIR"/bitbake/bin:$PATH
 
-cd $BASEDIR/build
+cd "$REPODIR"/build
 
-BAKE_DIR=$(bitbake -e | grep "^PACBAKE=" | cut -d= -f2 | xargs)
-DEPLOY_DIR=$(bitbake -e | grep "^DEPLOY=" | cut -d= -f2 | xargs)
+PACBASE=$(bitbake -e | grep "^PACBASE=" | cut -d= -f2 | xargs)
+DEPLOY=$(bitbake -e | grep "^DEPLOY=" | cut -d= -f2 | xargs)
 
-cd $BAKE_DIR
+cd "$PACBASE"
 
-mkdir work.store
-find . -path "*/temp/log/*" -exec cp --parent {} work.store \;
-tar -czf $DEPLOY_DIR/work.tar.gz -C work.store .
+mkdir buildlog
+find . -path "*/temp/log/*" -exec cp --parent {} buildlog \;
+tar -czf "$DEPLOY"/buildlog.tar.gz -C buildlog .

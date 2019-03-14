@@ -39,12 +39,13 @@ if ! [ -d "$BUILD_DIR" ]; then
 fi
 
 echo ">"
-echo "> The pacstage build environment setup is done"
+echo "> The pacstage build environment setup is completed."
+echo ">"
 if ! [ "$(command -v bitbake)" ]; then
-  echo "> You may need to set    PATH=$CMDPATH/bitbake/bin:\$PATH"
+  echo "> You may need to set     PATH=$CMDPATH/bitbake/bin:\$PATH"
 fi
-echo "> move on and go to      $BUILD_DIR"
-echo "> build a single recipe  bitbake <recipe>"
-echo "> build just everything  bitbake world"
-echo "> get a list of recipes  bitbake -s"
+echo "> Move on and go to       $BUILD_DIR"
+echo "> Build a single recipe   bitbake <recipe>"
+echo "> Build just everything   bitbake world"
+echo "> Get a list of recipes   bitbake -s"
 echo ">"

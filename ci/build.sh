@@ -3,14 +3,14 @@
 # CI build script
 #
 CMDPATH=$(cd "$(dirname $0)" && pwd)
-BASEDIR=$(realpath $CMDPATH/..)
+REPODIR=$(realpath "$CMDPATH"/..)
 
 STORE=/store
 PKGCACHE=$STORE/pkgcache
 
-PATH=$BASEDIR/bitbake/bin:$PATH
+PATH="$REPODIR"/bitbake/bin:$PATH
 
-cd $BASEDIR
+cd "$REPODIR"
 ./pacstage-init.sh -C "$PKGCACHE"
 
 cd build

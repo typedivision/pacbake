@@ -1,60 +1,68 @@
-PKGBASE = "${WORKDIR}/pkgbase"
-PKGDIR  = "$pkgdir"
-LICDIR  = "${PKGDIR}/usr/share/licenses/${P}"
+PKGDIR = "${WORKDIR}/pkgdir"
 
-HOST_DEPENDS += "pacman fakeroot"
+HOST_DEPENDS_BASE_append = " pacman fakeroot"
 
-addtask package after do_build before do_stage
-do_package[cleandirs] = "${PKGBASE}"
+PACKAGES = "${PN}"
+
+install_license() {
+  install -Dm644 "$1" -t "$2"/usr/share/licenses/${PN}
+}
+
+addtask package after do_install before do_stage
+do_package[cleandirs] = "${PKGDIR}"
 
 python() {
     pkgname = (d.getVar("PACKAGES") or "").split()
-    if len(pkgname) > 1:
+    if len(pkgname) == 0 or d.getVar("PN").endswith("-native"):
+        d.setVar("PACKAGES", "")
+        d.setVarFlag("do_package", "noexec", "1")
+    elif len(pkgname) > 1:
         for p in pkgname:
-            d.appendVarFlag("do_package", "vardeps", " step_package_" + p)
             d.appendVar("PROVIDES", " " + p)
 }
 
 python do_package() {
-    packagedir = d.getVar("PKGBASE")
-    pkgbuild = open(os.path.join(packagedir, 'PKGBUILD'), 'w')
+    pkgname = d.getVar("PACKAGES").split()
 
-    pkgname = (d.getVar("PACKAGES") or "").split()
-    if len(pkgname) == 0:
-        pkgname = [d.getVar("PN")];
+    pkgdir = d.getVar("PKGDIR")
+    pkgbuild = open(os.path.join(pkgdir, 'PKGBUILD'), 'w')
 
-    pkgbuild.write("pkgname=(%s)\n" % " ".join(pkgname))
-    pkgbuild.write("pkgver=%s\n" % d.getVar("PV"))
-    pkgbuild.write("pkgrel=%s\n" % d.getVar("PR"))
-    pkgbuild.write("pkgdesc=\"%s\"\n" % d.getVar("PD"))
-    pkgbuild.write("arch=(%s)\n" % d.getVar("TARGET_ARCH"))
-    pkgbuild.write("url=%s\n" % d.getVar("HOMEPAGE"))
-    pkgbuild.write("license=(%s)\n" % d.getVar("LICENSE"))
+    pkgbuild.write('pkgname=(%s)\n' % " ".join(pkgname))
+    pkgbuild.write('pkgver=%s\n' % d.getVar("PV"))
+    pkgbuild.write('pkgrel=%s\n' % d.getVar("PR"))
+    pkgbuild.write('pkgdesc="%s"\n' % d.getVar("PD"))
+    pkgbuild.write('arch=(%s)\n' % d.getVar("TARGET_ARCH"))
+    pkgbuild.write('url=%s\n' % d.getVar("HOMEPAGE"))
+    pkgbuild.write('license=(%s)\n' % d.getVar("LICENSE"))
+
     if d.getVar("RDEPENDS") is not None:
-        pkgbuild.write("depends=(%s)\n" % d.getVar("RDEPENDS"))
-    if len(pkgname) <= 1:
-        pkgbuild.write("package() {\n%s}\n" % d.getVar("step_package"))
+        pkgbuild.write('depends=(%s)\n' % d.getVar("RDEPENDS"))
+
+    if len(pkgname) == 1:
+        pkgbuild.write('package() { cp -r "%s"/. "$pkgdir"; }\n' % d.getVar("FILES_PKG"))
     else:
         for p in pkgname:
-            pkgbuild.write("package_%s() {\n%s}\n" % (p, d.getVar("step_package_" + p)))
+            pkgbuild.write(
+                'package_%s() { cp -r "%s_%s"/. "$pkgdir"; }\n' % (p, d.getVar("FILES_PKG"), p)
+            )
 
     pkgbuild.close()
-    bb.build.exec_func("pkgbuild", d)
+    bb.build.exec_func("package_pkgbuild", d)
 }
 
-pkgbuild() {
-  cd "${PKGBASE}"
+package_pkgbuild() {
+  cd "${PKGDIR}"
+  {
+    echo 'CARCH=${TARGET_ARCH}'
+    echo 'CHOST=${TARGET_SYS}'
+    echo 'OPTIONS=(strip !libtool !staticlibs emptydirs purge)'
+    echo 'PURGE_TARGETS=(usr/{,share}/{doc,man,info})'
+    echo 'PKGEXT=".pkg.tar.xz"'
+    echo 'strip() { ${TARGET_SYS}-strip "$@"; }'
+    echo 'objcopy() { ${TARGET_SYS}-objcopy "$@"; }'
+  } > makepkg.conf
 
-  printf > makepkg.conf '%s\n' \
-    'CARCH=${TARGET_ARCH}' \
-    'CHOST=${TARGET_SYS}' \
-    'OPTIONS=(strip !libtool !staticlibs emptydirs purge)' \
-    'PURGE_TARGETS=(usr/{,share}/{doc,man,info})' \
-    'PKGEXT=".pkg.tar.xz"' \
-    'strip() { ${TARGET_SYS}-strip "$@"; }' \
-    'objcopy() { ${TARGET_SYS}-objcopy "$@"; }'
-
-  ${WRAP_SYSBASE_USER} makepkg -Rdfc --config makepkg.conf
+  ${WRAP_DEVROOT_USER} makepkg -Rdfc --config makepkg.conf
 }
 
 addtask repo_add after do_stage before do_deploy

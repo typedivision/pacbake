@@ -5,16 +5,14 @@ HOMEPAGE = "http://e2fsprogs.sourceforge.net"
 LICENSE = "GPL"
 
 SRC_URI = " \
-  http://downloads.sourceforge.net/sourceforge/${P}/${P}-${PV}.tar.gz;md5sum=8d78b11d04d26c0b2dd149529441fa80 \
+  http://downloads.sourceforge.net/sourceforge/${P}/${S}.tar.gz;md5sum=8d78b11d04d26c0b2dd149529441fa80 \
 "
 
-HOST_DEPENDS = "gcc make pkgconfig"
+HOST_DEPENDS = "gcc"
 DEPENDS = "crosstool-ng"
 
-inherit pacman
-
 step_build() {
-  cd "${SRCDIR}"
+  cd "${SRCDIR}"/${S}
 
   ./configure \
     --host=${TARGET_SYS} \
@@ -34,12 +32,12 @@ step_build() {
     --enable-fsck
 
   make
-  make DESTDIR="${SRCBASE}"/setup install
+  make DESTDIR="${SRCDIR}"/dest install
 }
 
-step_package() {
-  cd "${SRCBASE}"/setup
-  cp --parent usr/sbin/{mke2fs,mkfs.ext4} "${PKGDIR}"
+step_install() {
+  cd "${SRCDIR}"/dest
+  cp -a --parent usr/sbin/{mke2fs,mkfs.ext4} "${FILES_PKG}"
 
-  install -Dm644 "${SRCDIR}"/NOTICE -t "${LICDIR}"
+  install_license "${SRCDIR}"/${S}/NOTICE "${FILES_PKG}"
 }

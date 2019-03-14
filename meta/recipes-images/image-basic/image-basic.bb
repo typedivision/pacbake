@@ -6,10 +6,8 @@ HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 IMAGE_PKGS = "sysroot sysdebug sysfiles linux-rpi pacman"
 DEPENDS = "${IMAGE_PKGS}"
 
-BUILD_AS_ROOT = "1"
-
-step_build() {
-  cd "${SRCBASE}"
+step_install() {
+  cd "${SRCDIR}"
 
   {
     echo '[options]'
@@ -40,22 +38,26 @@ step_build() {
   mkfs.vfat -n BOOT -S 512 -C fat.img $(expr $block_size / 2)
 
   mcopy -i fat.img -s rootfs.sqfs ::rootfs.sqfs
-  for file in "${SHARE}"/linux/{kernel8.img,bcm2710-rpi-3-b.dtb,COPYING.linux} "${SHARE}"/boot/*; do
+  for file in "${SDK_SHARED}"/linux-rpi/{kernel8.img,bcm2710-rpi-3-b.dtb,COPYING.linux} \
+              "${SDK_SHARED}"/linux-rpi/boot/*; do
     mcopy -i fat.img -s $file ::$(basename $file)
   done
 
   dd if=fat.img of=$img conv=notrunc seek=1 bs=1M
   cp $img "${FILES_DEPLOY}"/image/$img
 
-  mkdir -p "${STAGE}"/${PN}
-  tar -czf "${FILES_SHARE}"/basic.sdk.tar.gz -C "${SYSBASE}" ${SDK_PREFIX}
+  tar -czf "${FILES_DEPLOY}"/basic.sdk.tar.gz -C "${DEVROOT}" ${SDK_PREFIX}
 }
 
 step_deploy() {
-  mkdir -p "${SRCBASE}"/sdk-docker
-  cd "${SRCBASE}"/sdk-docker
+  if ! [ "${DOCKER_SDK}" ]; then
+    return
+  fi
 
-  cp "${SHARE}"/basic.sdk.tar.gz sdk.tar.gz
+  mkdir -p "${SRCDIR}"/sdk-docker
+  cd "${SRCDIR}"/sdk-docker
+
+  cp "${DEPLOY}"/basic.sdk.tar.gz sdk.tar.gz
   {
     echo "FROM typedivision/arch-micro"
     echo "ADD sdk.tar.gz /"

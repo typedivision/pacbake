@@ -5,18 +5,14 @@ HOMEPAGE = "http://www.archlinux.org/pacman/"
 LICENSE = "GPL"
 
 SRC_URI = " \
-  https://sources.archlinux.org/other/${P}/${P}-${PV}.tar.gz;md5sum=4da799005fe4d8c6f13fd80a4f67e96f \
+  https://sources.archlinux.org/other/${P}/${S}.tar.gz;md5sum=4da799005fe4d8c6f13fd80a4f67e96f \
 "
-
-HOST_DEPENDS = "make pkgconfig"
 
 DEPENDS = "crosstool-ng"
 RDEPENDS = "libarchive openssl"
 
-inherit pacman
-
 step_build() {
-  cd "${SRCDIR}"
+  cd "${SRCDIR}"/${S}
 
   ./configure \
     --host=${TARGET_SYS} \
@@ -27,14 +23,16 @@ step_build() {
     --disable-doc
 
   make
-  make -C "${SRCDIR}" DESTDIR="${SRCBASE}"/setup install
 }
 
-step_package() {
-  cd "${SRCBASE}"/setup
-  install -D usr/bin/pacman -t "${PKGDIR}"/usr/bin
-  install -D etc/pacman.conf -t "${PKGDIR}"/etc
-  find usr/lib -name "*.so*" -exec cp --parents -a {} "${PKGDIR}" \;
+step_install() {
+  cd "${SRCDIR}"/${S}
+  make DESTDIR="${SRCDIR}"/destdir install
 
-  install -Dm644 "${SRCDIR}"/COPYING -t "${LICDIR}"
+  cd "${SRCDIR}"/destdir
+  install -D usr/bin/pacman -t "${FILES_PKG}"/usr/bin
+  install -D etc/pacman.conf -t "${FILES_PKG}"/etc
+  find usr/lib -name "*.so*" -exec cp --parents {} "${FILES_PKG}" \;
+
+  install_license "${SRCDIR}"/${S}/COPYING "${FILES_PKG}"
 }

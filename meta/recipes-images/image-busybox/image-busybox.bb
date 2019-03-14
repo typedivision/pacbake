@@ -2,13 +2,10 @@ PD = "Minimal image with busybox"
 PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
-
 DEPENDS = "linux-rpi busybox"
 
-BUILD_AS_ROOT = "1"
-
-step_build() {
-  cd "${SRCBASE}"
+step_install() {
+  cd "${SRCDIR}"
 
   {
     echo '[options]'
@@ -47,7 +44,8 @@ step_build() {
   mkfs.vfat -n BOOT -S 512 -C fat.img $(expr $block_size / 2)
 
   mcopy -i fat.img -s rootfs.sqfs ::rootfs.sqfs
-  for file in "${SHARE}"/linux/{kernel8.img,bcm2710-rpi-3-b.dtb,COPYING.linux} "${SHARE}"/boot/*; do
+  for file in "${SDK_SHARED}"/linux-rpi/{kernel8.img,bcm2710-rpi-3-b.dtb,COPYING.linux} \
+              "${SDK_SHARED}"/linux-rpi/boot/*; do
     mcopy -i fat.img -s $file ::$(basename $file)
   done
 

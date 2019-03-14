@@ -1,17 +1,20 @@
-BB_DEFAULT_TASK ?= "all"
+BB_DEFAULT_TASK = "all"
 
-inherit logging sstate
+inherit logging sstate pacman
 
 FILESPATH = "${FILE_DIRNAME}"
 PKGCACHE ?= "${DL_DIR}/pkgcache"
 
-HOST_DEPENDS_BASE = "shadow coreutils findutils diffutils bash tar gzip sed grep gawk which file patch"
+HOST_DEPENDS_BASE = " \
+  shadow coreutils findutils diffutils bash sed grep gawk \
+  which file tar gzip patch make pkgconfig \
+"
 
 DEPENDS_append = " ${RDEPENDS}"
 RDEPENDS = ""
 
-WRAP_SYSBASE = 'bwrap \
-  --bind "${SYSBASE}" / \
+WRAP_DEVROOT = 'bwrap \
+  --bind "${DEVROOT}" / \
   --proc /proc \
   --dev /dev \
   --tmpfs /tmp \
@@ -19,11 +22,10 @@ WRAP_SYSBASE = 'bwrap \
   --bind "${WORKDIR}" "${WORKDIR}" \
   --bind "${DL_DIR}" "${DL_DIR}" \
   --bind "${REPO}" "${REPO}" \
-  --bind "${SHARE}" "${SHARE}" \
-  --setenv WRAP 1 \
+  --setenv DEVROOT 1 \
 '
 
-WRAP_SYSBASE_USER = '${WRAP_SYSBASE} \
+WRAP_DEVROOT_USER = '${WRAP_DEVROOT} \
   --unshare-user --uid 1000 \
 '
 
@@ -31,7 +33,7 @@ addtask clean
 do_clean[nostamp] = "1"
 
 python do_clean() {
-    bb.note("Cleaning workdir, stamps and stage files for package " + d.getVar("P"))
+    bb.note("Cleaning workdir, stamps and stage files for package " + d.getVar("PN"))
     workdir = d.expand("${W}")
     stamps = d.expand("${STAMP}.*")
     stage = d.expand("${STAGE}/${PN}")
@@ -51,15 +53,15 @@ python do_fetch() {
         fetcher = bb.fetch2.Fetch(src_uri, d)
         fetcher.download()
         if d.getVar("UNPACK"):
-            fetcher.unpack(d.getVar("SRCBASE"))
+            fetcher.unpack(d.getVar("SRCDIR"))
     except bb.fetch2.BBFetchException as e:
         bb.fatal(str(e))
 }
 
 addtask setup before do_build
 do_setup[deptask] = "do_stage"
-do_setup[cleandirs] = "${SYSBASE}"
-do_setup[dirs] = "${LOCAL}"
+do_setup[cleandirs] = "${DEVROOT}"
+do_setup[dirs] = "${COMMON}"
 do_setup[vardepsexclude] += "BB_TASKDEPDATA"
 do_setup[vardeps] += "DEPENDS"
 
@@ -73,34 +75,41 @@ python do_setup() {
 
     localdata = bb.data.createCopy(d)
     localdata.setVar("BUILD_DEPENDS", " ".join(depends))
-    bb.build.exec_func("setup_system", localdata)
+    bb.build.exec_func("setup_devroot", localdata)
 }
 
-setup_system() {
-  local sysbase_setup="${LOCAL}"/sysbase_setup
-  if ! [ -d "$sysbase_setup" ]; then
+setup_devroot() {
+  local devroot_base="${COMMON}"/devroot_base
+  if ! [ -d "$devroot_base" ]; then
     (
       flock 200
-      [ -d "$sysbase_setup" ] && exit
-      rm -rf "$sysbase_setup.tmp"
-      mkdir -p "$sysbase_setup.tmp"
-      pacstrap "$sysbase_setup.tmp" ${HOST_DEPENDS_BASE} --cachedir="${PKGCACHE}"
-      echo "en_US.UTF-8 UTF-8" > "$sysbase_setup.tmp"/etc/locale.gen
-      bwrap --bind "$sysbase_setup.tmp" / sh -c "locale-gen; useradd -u 1000 user"
-      mv "$sysbase_setup.tmp" "$sysbase_setup"
-    ) 200>"$sysbase_setup.lock"
+      [ -d "$devroot_base" ] && exit
+      rm -rf "$devroot_base.tmp"
+      mkdir -p "$devroot_base.tmp"
+      pacstrap "$devroot_base.tmp" ${HOST_DEPENDS_BASE} --cachedir="${PKGCACHE}"
+      echo "en_US.UTF-8 UTF-8" > "$devroot_base.tmp"/etc/locale.gen
+      bwrap --bind "$devroot_base.tmp" / sh -c "locale-gen; useradd -u 1000 user"
+      mv "$devroot_base.tmp" "$devroot_base"
+    ) 200>"$devroot_base.lock"
   fi
-  cp -a "$sysbase_setup"/. "${SYSBASE}"
-  pacman -r "${SYSBASE}" --cachedir="${PKGCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
+  cp -a "$devroot_base"/. "${DEVROOT}"
+  if [ "${HOST_DEPENDS}" ]; then
+    pacman -r "${DEVROOT}" --cachedir="${PKGCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
+  fi
   for dep in ${BUILD_DEPENDS}; do
-    if [ -e "${STAGE}"/$dep/$dep.setup.tar.gz ]; then
-      bbmsg INFO "install $dep"
-      tar -h -xf "${STAGE}"/$dep/$dep.setup.tar.gz -C "${SYSBASE}"
+    if [ -e "${STAGE}"/$dep/$dep.devel.tar.gz ]; then
+      bbmsg INFO "setup $dep"
+      tar -h -xf "${STAGE}"/$dep/$dep.devel.tar.gz -C "${DEVROOT}"
+    fi
+    if [ -e "${STAGE}"/$dep/$dep.share.tar.gz ]; then
+      bbmsg INFO "setup shared files of $dep"
+      mkdir -p "${DEVROOT}"/${SDK_SHARED}/$dep
+      tar -h -xf "${STAGE}"/$dep/$dep.share.tar.gz -C "${DEVROOT}"/${SDK_SHARED}/$dep
     fi
   done
 }
 
-unpack[cleandirs] = "${SRCBASE}"
+unpack[cleandirs] = "${SRCDIR}"
 
 python unpack() {
     localdata = bb.data.createCopy(d)
@@ -111,22 +120,16 @@ python unpack() {
 addtask build after do_setup
 do_build[deptask] = "do_deploy"
 do_build[prefuncs] = "unpack"
-do_build[cleandirs] = "${FILES_SETUP} ${FILES_SHARE} ${FILES_DEPLOY}"
-do_build[dirs] = "${REPO} ${SHARE}"
+do_build[dirs] = "${REPO}"
 
 do_build() {
-  if ! [ "$WRAP" ]; then
-    bbmsg NOTE "Executing Build Task"
-    if [ "${BUILD_AS_ROOT}" ]; then
-      exec ${WRAP_SYSBASE} "$0"
-    else
-      exec ${WRAP_SYSBASE_USER} "$0"
-    fi
-  else
-    step_prepare
-    step_build
-    step_install
+  if ! [ "$DEVROOT" ]; then
+    exec ${WRAP_DEVROOT_USER} "$0"
   fi
+  cd "${SRCDIR}"
+  step_prepare
+  cd "${SRCDIR}"
+  step_build
 }
 
 base_step_prepare() {
@@ -135,6 +138,25 @@ base_step_prepare() {
 
 base_step_build() {
   :
+}
+
+addtask install after do_build
+do_install[cleandirs] = "${TARGET}"
+
+do_install() {
+  if ! [ "$DEVROOT" ]; then
+    exec ${WRAP_DEVROOT} "$0"
+  fi
+  mkdir -p "${FILES_DEVEL}" "${FILES_SHARE}" "${FILES_DEPLOY}"
+  for p in ${PACKAGES}; do
+    if [ "$p" = "${PN}" ]; then
+      install -d "${FILES_PKG}"
+    else
+      install -d "${FILES_PKG}_$p"
+    fi
+  done
+  cd "${SRCDIR}"
+  step_install
 }
 
 base_step_install() {
@@ -146,13 +168,13 @@ do_devshell[prefuncs] = "unpack"
 do_devshell[nostamp] = "1"
 
 do_devshell() {
-  if ! [ "$WRAP" ]; then
+  if ! [ "$DEVROOT" ]; then
     if ! tmux info &> /dev/null; then
       bbmsg WARNING "tmux is not running"
       return 1
     fi
     tmux split-window "
-      ${WRAP_SYSBASE_USER} \"$0\"
+      ${WRAP_DEVROOT_USER} \"$0\"
       tmux wait-for -S done
     " \; wait-for done
   else
@@ -162,17 +184,17 @@ do_devshell() {
 }
 
 base_step_devshell() {
-  cd "${SRCBASE}"
+  cd "${SRCDIR}"
   exec bash
 }
 
-addtask stage after do_build
+addtask stage after do_install
 do_stage[cleandirs] = "${STAGE}/${PN}"
 do_stage[postfuncs] = "teardown"
 
 do_stage() {
-  if [ "$(ls ${FILES_SETUP})" ]; then
-    tar -czf "${STAGE}/${PN}/${PN}".setup.tar.gz -C "${FILES_SETUP}" .
+  if [ "$(ls ${FILES_DEVEL})" ]; then
+    tar -czf "${STAGE}/${PN}/${PN}".devel.tar.gz -C "${FILES_DEVEL}" .
   fi
   if [ "$(ls ${FILES_SHARE})" ]; then
     tar -czf "${STAGE}/${PN}/${PN}".share.tar.gz -C "${FILES_SHARE}" .
@@ -180,27 +202,24 @@ do_stage() {
   if [ "$(ls ${FILES_DEPLOY})" ]; then
     tar -czf "${STAGE}/${PN}/${PN}".deploy.tar.gz -C "${FILES_DEPLOY}" .
   fi
-  if [ -d "${PKGBASE}" ]; then
-    find "${PKGBASE}" -name "*.pkg.tar.*" -exec cp {} "${STAGE}/${PN}" \;
+  if [ -d "${PKGDIR}" ]; then
+    find "${PKGDIR}" -name "*.pkg.tar.*" -exec cp {} "${STAGE}/${PN}" \;
   fi
 }
 
 python teardown() {
     bb.build.del_stamp("do_setup", d)
-    sysbase = d.expand("${SYSBASE}")
+    sysbase = d.expand("${DEVROOT}")
     bb.utils.remove(sysbase, True)
 }
 
 addtask deploy after do_stage
 do_deploy[deptask] = "do_deploy"
-do_deploy[dirs] = "${SHARE} ${DEPLOY}"
+do_deploy[dirs] = "${DEPLOY}"
 
 do_deploy() {
   if [ -e "${STAGE}"/${PN}/${PN}.deploy.tar.gz ]; then
     tar -xhf "${STAGE}"/${PN}/${PN}.deploy.tar.gz -C "${DEPLOY}"
-  fi
-  if [ -e "${STAGE}"/${PN}/${PN}.share.tar.gz ]; then
-    tar -xhf "${STAGE}"/${PN}/${PN}.share.tar.gz -C "${SHARE}"
   fi
   step_deploy
 }

@@ -5,25 +5,23 @@ HOMEPAGE = "https://www.busybox.net"
 LICENSE = "GPL"
 
 SRC_URI = " \
-  https://www.busybox.net/downloads/${P}-${PV}.tar.bz2;md5sum=928919a21e34d5c5507d872a4fb7b9f4 \
+  https://www.busybox.net/downloads/${S}.tar.bz2;md5sum=928919a21e34d5c5507d872a4fb7b9f4 \
   file://busybox.config \
-  file://pkg \
+  file://pkgfiles \
 "
 
-HOST_DEPENDS = "make gcc"
+HOST_DEPENDS = "gcc"
 DEPENDS = "crosstool-ng"
-
-inherit pacman
 
 step_devshell() {
   step_build devshell
 }
 
 step_build() {
-  cd "${SRCDIR}"
+  cd "${SRCDIR}"/${S}
 
   export CROSS_COMPILE="${TARGET_SYS}-"
-  cat "${SRCBASE}"/busybox.config > .config
+  cat "${SRCDIR}"/busybox.config > .config
 
   if [ "$1" = devshell ]; then
     exec bash
@@ -33,9 +31,10 @@ step_build() {
   make install
 }
 
-step_package() {
-  cp -r "${SRCDIR}"/_install/. "${PKGDIR}"
-  cp -r "${SRCBASE}"/pkg/. "${PKGDIR}"
+step_install() {
+  cd "${SRCDIR}"/${S}
+  cp -a _install/. "${FILES_PKG}"
+  cp -a "${SRCDIR}"/pkgfiles/. "${FILES_PKG}"
 
-  install -Dm644 "${SRCDIR}"/LICENSE -t "${LICDIR}"
+  install_license LICENSE "${FILES_PKG}"
 }

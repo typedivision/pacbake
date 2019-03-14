@@ -5,19 +5,17 @@ HOMEPAGE = "http://ymorin.is-a-geek.org/projects/kconfig-frontends"
 LICENSE = "GPL"
 
 SRC_URI = " \
-  http://ymorin.is-a-geek.org/download/${P}/${P}-${PV}.tar.xz;md5sum=ee0d3718b83b519f384ef5f7eae980c5 \
+  http://ymorin.is-a-geek.org/download/${P}/${S}.tar.xz;md5sum=ee0d3718b83b519f384ef5f7eae980c5 \
 "
 
-HOST_DEPENDS = "make flex bison gperf"
+HOST_DEPENDS = "flex bison gperf"
 HOST_DEPENDS_native = "${HOST_DEPENDS} gcc"
 
 DEPENDS = "crosstool-ng"
 DEPENDS_native = ""
 
-inherit pacman
-
 step_build() {
-  cd "${SRCDIR}"
+  cd "${SRCDIR}"/${S}
 
   ./configure \
     --host=${TARGET_SYS} \
@@ -26,19 +24,22 @@ step_build() {
 
   rm libs/parser/hconf.c
   make
-
-  if [ "${PN}" = "${P}-native" ]; then
-    make DESTDIR="${FILES_SETUP}" install
-  fi
 }
 
-step_package() {
-  make -C "${SRCDIR}" DESTDIR="${PKGDIR}" install
-  rm -r "${PKGDIR}"/{share,include}
-  rm "${PKGDIR}"/bin/kconfig-{gettext,diff,merge}
-  rm "${PKGDIR}"/lib/pkgconfig/kconfig-parser.pc
+step_install() {
+  cd "${SRCDIR}"/${S}
 
-  install -Dm644 "${SRCDIR}"/COPYING -t "${LICDIR}"
+  if [ "${PN}" = "${P}-native" ]; then
+    make DESTDIR="${FILES_DEVEL}" install
+    return
+  fi
+
+  make DESTDIR="${FILES_PKG}" install
+  rm -r "${FILES_PKG}"/{share,include}
+  rm "${FILES_PKG}"/bin/kconfig-{gettext,diff,merge}
+  rm "${FILES_PKG}"/lib/pkgconfig/*.pc
+
+  install_license COPYING "${FILES_LICENSE}"
 }
 
 BBCLASSEXTEND = "native"

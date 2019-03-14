@@ -1,12 +1,12 @@
 PD = "Versatile (cross-)toolchain generator"
-PV = "${PV_SRC}"
+PV = "${PV_REV}"
 
 HOMEPAGE = "http://crosstool-ng.org"
 LICENSE = "GPL"
 
 SRC_URI = " \
   git://github.com/crosstool-ng/crosstool-ng;protocol=https \
-  file://${P}_${TARGET_ALIAS}.config \
+  file://crosstool-ng_${TARGET_ALIAS}.config \
   file://0001-no-license-deployment-for-ct-itself.patch \
 "
 
@@ -14,10 +14,9 @@ SRCREV = "616870f619ab97c31466c71b37ca07978dc9ed65"
 
 HOST_DEPENDS = " \
   wget ca-certificates xz unzip \
-  autoconf automake make gcc flex bison help2man \
+  autoconf automake gcc flex bison help2man \
 "
 
-inherit pacman
 PACKAGES = "sysroot sysdebug"
 
 step_devshell() {
@@ -25,28 +24,29 @@ step_devshell() {
 }
 
 step_prepare() {
-  ## build crosstool-ng
-  cd "${SRCBASE}"/git
-  patch -Np1 -i "${SRCBASE}"/0001-no-license-deployment-for-ct-itself.patch
+  cd "${SRCDIR}"/git
+
+  # build crosstool-ng
+  patch -Np1 -i "${SRCDIR}"/0001-no-license-deployment-for-ct-itself.patch
 
   export CC="${CC_BUILD}"
   ./bootstrap
-  ./configure --prefix="${SRCBASE}"/local
+  ./configure --prefix="${SRCDIR}"/local
   make install
 }
 
 step_build() {
-  ## build toolchain
-  mkdir "${SRCBASE}"/build
-  cd "${SRCBASE}"/build
+  mkdir "${SRCDIR}"/build
+  cd "${SRCDIR}"/build
 
+  # build toolchain
   unset CC CXX AR RANLIB
   export CT_DL_DIR="${DL_DIR}"/ct-ng
   export CT_PREFIX="${SDK_PREFIX}"
-  export PATH="${SRCBASE}"/local/bin:$PATH
+  export PATH="${SRCDIR}"/local/bin:$PATH
 
   mkdir -p "$CT_DL_DIR"
-  cat "${SRCBASE}"/${P}_${TARGET_ALIAS}.config > .config
+  cat "${SRCDIR}"/crosstool-ng_${TARGET_ALIAS}.config > .config
 
   if [ "$1" = devshell ]; then
     exec bash
@@ -56,54 +56,62 @@ step_build() {
 }
 
 step_install() {
-  cd ${SDK_PREFIX}
-  mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}
-  cp -a bin lib libexec "${FILES_SETUP}"/${SDK_PREFIX}
-
-  cd ${SDK_PREFIX}/${TARGET_SYS}
-  mkdir -p "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}
-  cp -a bin sysroot "${FILES_SETUP}"/${SDK_PREFIX}/${TARGET_SYS}
+  install_devel
+  install_sysroot
+  install_sysdebug
 }
 
-step_package_sysroot() {
+install_devel() {
+  cd ${SDK_PREFIX}
+  install -d "${FILES_DEVEL}"/${SDK_PREFIX}
+  cp -a bin lib libexec "${FILES_DEVEL}"/${SDK_PREFIX}
+
+  cd ${SDK_PREFIX}/${TARGET_SYS}
+  install -d "${FILES_DEVEL}"/${SDK_PREFIX}/${TARGET_SYS}
+  cp -a bin sysroot "${FILES_DEVEL}"/${SDK_PREFIX}/${TARGET_SYS}
+}
+
+install_sysroot() {
+  local pkgdir="${FILES_PKG}_sysbase"
   cd ${SDK_PREFIX}/${TARGET_SYS}/sysroot
 
-  mkdir -p "${PKGDIR}"/lib "${PKGDIR}"/usr/lib
-  cp -r lib/. usr/lib/. "${PKGDIR}"/lib
-  ln -s lib "${PKGDIR}"/lib64
-  ln -s lib "${PKGDIR}"/usr/lib64
+  install -d "$pkgdir"/lib "$pkgdir"/usr/lib
+  cp -a lib/. usr/lib/. "$pkgdir"/lib
+  ln -s lib "$pkgdir"/lib64
+  ln -s lib "$pkgdir"/usr/lib64
 
   for ext in a o map pc py spec; do
-    find "${PKGDIR}" -name "*.$ext" -exec rm {} \;
+    find "$pkgdir" -name "*.$ext" -exec rm {} \;
   done
-  rm -r "${PKGDIR}"/lib/{audit,gconv,pkgconfig}
-  rm "${PKGDIR}"/lib/lib*san.*
+  rm -r "$pkgdir"/lib/{audit,gconv,pkgconfig}
+  rm "$pkgdir"/lib/lib*san.*
 
-  mkdir -p "${PKGDIR}"/usr/bin
-  cp sbin/ldconfig "${PKGDIR}"/usr/bin
-  cp usr/bin/ldd "${PKGDIR}"/usr/bin
+  install -d "$pkgdir"/usr/bin
+  cp sbin/ldconfig "$pkgdir"/usr/bin
+  cp usr/bin/ldd "$pkgdir"/usr/bin
 
-  mkdir -p "${PKGDIR}"/usr/share/licenses
-  for pkg in expat gcc glibc linux ncurses; do
-    cp -r ${SDK_PREFIX}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+  install -d "$pkgdir"/usr/share/licenses
+  for pn in expat gcc glibc linux ncurses; do
+    cp -a ${SDK_PREFIX}/share/licenses/$pn "$pkgdir"/usr/share/licenses
   done
 
-  find "${PKGDIR}" -type d -exec chmod 755 {} \;
+  find "$pkgdir" -type d -exec chmod 755 {} \;
 }
 
-step_package_sysdebug() {
+install_sysdebug() {
+  local pkgdir="${FILES_PKG}_sysdebug"
   cd ${SDK_PREFIX}/${TARGET_SYS}
 
-  mkdir -p "${PKGDIR}"/opt
-  cp -r debug-root/usr/bin "${PKGDIR}"/opt
+  install -d "$pkgdir"/opt/debug
+  cp -a debug-root/usr/bin "$pkgdir"/opt/debug
 
-  mkdir -p "${PKGDIR}"/opt/lib
-  cp -r sysroot/lib/lib*san.* "${PKGDIR}"/opt/lib
+  install -d "$pkgdir"/opt/debug/lib
+  cp -a sysroot/lib/lib*san.* "$pkgdir"/opt/debug/lib
 
-  mkdir -p "${PKGDIR}"/usr/share/licenses
-  for pkg in gdb strace; do
-    cp -r ${SDK_PREFIX}/share/licenses/$pkg "${PKGDIR}"/usr/share/licenses
+  install -d "$pkgdir"/usr/share/licenses
+  for pn in gdb strace; do
+    cp -a ${SDK_PREFIX}/share/licenses/$pn "$pkgdir"/usr/share/licenses
   done
 
-  find "${PKGDIR}" -type d -exec chmod 755 {} \;
+  find "$pkgdir" -type d -exec chmod 755 {} \;
 }
