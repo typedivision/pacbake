@@ -61,7 +61,7 @@ python do_fetch() {
 addtask setup before do_build
 do_setup[deptask] = "do_stage"
 do_setup[cleandirs] = "${DEVROOT}"
-do_setup[dirs] = "${COMMON}"
+do_setup[dirs] = "${PKGCACHE} ${COMMON}"
 do_setup[vardepsexclude] += "BB_TASKDEPDATA"
 do_setup[vardeps] += "DEPENDS"
 
@@ -82,7 +82,7 @@ setup_devroot() {
   local devroot_base="${COMMON}"/devroot_base
   if ! [ -d "$devroot_base" ]; then
     (
-      flock 200
+      flock 100
       [ -d "$devroot_base" ] && exit
       rm -rf "$devroot_base.tmp"
       mkdir -p "$devroot_base.tmp"
@@ -90,11 +90,14 @@ setup_devroot() {
       echo "en_US.UTF-8 UTF-8" > "$devroot_base.tmp"/etc/locale.gen
       bwrap --bind "$devroot_base.tmp" / sh -c "locale-gen; useradd -u 1000 user"
       mv "$devroot_base.tmp" "$devroot_base"
-    ) 200>"$devroot_base.lock"
+    ) 100>"$devroot_base.lock"
   fi
   cp -a "$devroot_base"/. "${DEVROOT}"
   if [ "${HOST_DEPENDS}" ]; then
-    pacman -r "${DEVROOT}" --cachedir="${PKGCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
+    (
+      flock 100
+      pacman -r "${DEVROOT}" --cachedir="${PKGCACHE}" -S --noconfirm --needed ${HOST_DEPENDS}
+    ) 100>"${PKGCACHE}/pkgcache.lock"
   fi
   for dep in ${BUILD_DEPENDS}; do
     if [ -e "${STAGE}"/$dep/$dep.devel.tar.gz ]; then
