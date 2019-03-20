@@ -32,11 +32,13 @@ step_build() {
     --enable-fsck
 
   make
-  make DESTDIR="${SRCDIR}"/dest install
 }
 
 step_install() {
-  cd "${SRCDIR}"/dest
+  cd "${SRCDIR}"/${S}
+  make DESTDIR="${RESULT}"/pkg install
+
+  cd "${RESULT}"/pkg
   cp -a --parent usr/sbin/{mke2fs,mkfs.ext4} "${FILES_PKG}"
 
   install_license "${SRCDIR}"/${S}/NOTICE "${FILES_PKG}"

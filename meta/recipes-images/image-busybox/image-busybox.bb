@@ -5,7 +5,8 @@ HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 DEPENDS = "linux-rpi busybox"
 
 step_install() {
-  cd "${SRCDIR}"
+  mkdir "${RESULT}"/image
+  cd "${RESULT}"/image
 
   {
     echo '[options]'

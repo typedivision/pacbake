@@ -17,7 +17,7 @@ HOST_DEPENDS = " \
   autoconf automake gcc flex bison help2man \
 "
 
-PACKAGES = "sysroot sysdebug"
+PACKAGES = "sysbase sysdebug"
 
 step_devshell() {
   step_build devshell
@@ -57,7 +57,7 @@ step_build() {
 
 step_install() {
   install_devel
-  install_sysroot
+  install_sysbase
   install_sysdebug
 }
 
@@ -71,7 +71,7 @@ install_devel() {
   cp -a bin sysroot "${FILES_DEVEL}"/${SDK_PREFIX}/${TARGET_SYS}
 }
 
-install_sysroot() {
+install_sysbase() {
   local pkgdir="${FILES_PKG}_sysbase"
   cd ${SDK_PREFIX}/${TARGET_SYS}/sysroot
 

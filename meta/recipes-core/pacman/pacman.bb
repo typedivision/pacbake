@@ -27,9 +27,9 @@ step_build() {
 
 step_install() {
   cd "${SRCDIR}"/${S}
-  make DESTDIR="${SRCDIR}"/destdir install
+  make DESTDIR="${RESULT}"/pkg install
 
-  cd "${SRCDIR}"/destdir
+  cd "${RESULT}"/pkg
   install -D usr/bin/pacman -t "${FILES_PKG}"/usr/bin
   install -D etc/pacman.conf -t "${FILES_PKG}"/etc
   find usr/lib -name "*.so*" -exec cp --parents {} "${FILES_PKG}" \;

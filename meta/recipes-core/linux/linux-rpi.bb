@@ -2,7 +2,7 @@ PD = "The linux kernel"
 PV_pi = "7f9c648"
 PV_fw = "55e5912"
 PV_nf = "b518de4"
-PV = "4.9.18"
+PV = "4.9.80"
 
 HOMEPAGE = "http://www.kernel.org"
 LICENSE = "GPL"
@@ -34,11 +34,11 @@ step_build() {
   fi
 
   make
-  make INSTALL_MOD_PATH="${SRCDIR}"/dest_mod modules_install
 }
 
 step_install() {
   cd "${SRCDIR}"/raspberrypi-linux-${PV_pi}
+  make INSTALL_MOD_PATH="${RESULT}"/modules modules_install
 
   install -D arch/arm64/boot/Image "${FILES_DEPLOY}"/linux/kernel8.img
   cp arch/arm64/boot/dts/broadcom/bcm2710-rpi-3-b.dtb "${FILES_DEPLOY}"/linux
@@ -62,17 +62,15 @@ step_install() {
 }
 
 install_package() {
-  install -d "${FILES_PKG}"
-  mkdir -p "${PKGDIR}"/lib/firmware/brcm
-
-  cp -r "${SRCDIR}"/dest_mod/lib/. "${PKGDIR}"/lib
-  rm -rf "${PKGDIR}"/lib/modules/${PV}/{build,source}
+  install -d "${FILES_PKG}"/lib
+  cp -a "${RESULT}"/modules/lib/. "${FILES_PKG}"/lib
+  rm "${FILES_PKG}"/lib/modules/${PV}/{build,source}
 
   cd "${SRCDIR}"/RPi-Distro-firmware-nonfree-${PV_nf}
-  cp brcm/brcmfmac43430-sdio.{bin,txt} "${PKGDIR}"/lib/firmware/brcm
+  install -D brcm/brcmfmac43430-sdio.{bin,txt} -t "${FILES_PKG}"/lib/firmware/brcm
 
-  install_license LICENCE.broadcom_bcm43xx "${PKGDIR}"
+  install_license LICENCE.broadcom_bcm43xx "${FILES_PKG}"
 
   cd "${SRCDIR}"/raspberrypi-linux-${PV_pi}
-  install_license COPYING "${PKGDIR}"
+  install_license COPYING "${FILES_PKG}"
 }

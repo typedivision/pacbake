@@ -29,4 +29,4 @@ if [ "$HOSTNAME" ]; then
   hostname "$HOSTNAME"
 fi
 
-exec /sbin/getty -L 115200 /dev/ttyS0 vt100
+exec /sbin/getty -L 115200 /dev/console vt100

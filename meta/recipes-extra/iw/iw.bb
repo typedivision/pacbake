@@ -16,8 +16,9 @@ step_build() {
   make
 }
 
-step_package() {
+step_install() {
   cd "${SRCDIR}"/${S}
+
   make DESTDIR="${FILES_PKG}" SBINDIR="/usr/bin" install
   rm -rf "${FILES_PKG}"/usr/share/man
 

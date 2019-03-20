@@ -3,11 +3,12 @@ PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-IMAGE_PKGS = "sysroot sysdebug sysfiles linux-rpi pacman"
+IMAGE_PKGS = "sysbase sysdebug sysfiles linux-rpi pacman"
 DEPENDS = "${IMAGE_PKGS}"
 
 step_install() {
-  cd "${SRCDIR}"
+  mkdir "${RESULT}"/image
+  cd "${RESULT}"/image
 
   {
     echo '[options]'

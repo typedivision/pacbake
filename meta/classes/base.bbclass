@@ -1,4 +1,5 @@
 BB_DEFAULT_TASK = "all"
+T = "${WORKDIR}/temp"
 
 inherit logging sstate pacman
 
@@ -123,12 +124,14 @@ python unpack() {
 addtask build after do_setup
 do_build[deptask] = "do_deploy"
 do_build[prefuncs] = "unpack"
-do_build[dirs] = "${REPO}"
+do_build[cleandirs] = "${RESULT}"
+do_build[dirs] = "${REPO} ${WORKDIR}"
 
 do_build() {
   if ! [ "$DEVROOT" ]; then
     exec ${WRAP_DEVROOT_USER} "$0"
   fi
+  bbmsg NOTE "Start Build at $(date +'%T %Z')"
   cd "${SRCDIR}"
   step_prepare
   cd "${SRCDIR}"
@@ -144,7 +147,8 @@ base_step_build() {
 }
 
 addtask install after do_build
-do_install[cleandirs] = "${TARGET}"
+do_install[cleandirs] = "${RESULT} ${TARGET}"
+do_install[dirs] = "${WORKDIR}"
 
 do_install() {
   if ! [ "$DEVROOT" ]; then
@@ -169,6 +173,7 @@ base_step_install() {
 addtask devshell after do_setup
 do_devshell[prefuncs] = "unpack"
 do_devshell[nostamp] = "1"
+do_devshell[dirs] = "${WORKDIR}"
 
 do_devshell() {
   if ! [ "$DEVROOT" ]; then
@@ -177,7 +182,7 @@ do_devshell() {
       return 1
     fi
     tmux split-window "
-      ${WRAP_DEVROOT_USER} \"$0\"
+      ${WRAP_DEVROOT_USER} \"$0\" || sleep 20
       tmux wait-for -S done
     " \; wait-for done
   else

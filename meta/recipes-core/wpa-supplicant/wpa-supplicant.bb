@@ -19,7 +19,7 @@ step_build() {
   make
 }
 
-step_package() {
+step_install() {
   cd "${SRCDIR}/wpa_supplicant-${PV}"
   make -C wpa_supplicant DESTDIR="${FILES_PKG}" BINDIR=/usr/bin install
 
