@@ -2,7 +2,7 @@ PV = "0"
 
 HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 
-IMAGE_PKGS = "sysbase sysdebug sysfiles linux-rpi pacman"
+IMAGE_PKGS = "sysbase sysdebug sysfiles linux-rpi pacman dropbear"
 DEPENDS = "${IMAGE_PKGS}"
 
 step_install() {
