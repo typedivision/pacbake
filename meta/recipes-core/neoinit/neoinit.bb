@@ -8,7 +8,7 @@ SRC_URI = " \
   git://github.com/typedivision/neoinit;protocol=https \
 "
 
-SRCREV = "8f64c13fbebd4e7b070c65c465e6dcd29270cb54"
+SRCREV = "f091ebc307b038cd743aa109d1faaf2f6f865a40"
 
 DEPENDS = "crosstool-ng"
 

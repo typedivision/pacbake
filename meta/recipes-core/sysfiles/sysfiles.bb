@@ -12,12 +12,16 @@ step_install() {
   cd "${SRCDIR}"/config
   kconfig-conf --olddefconfig Kconfig
 
-  for dir in etc data volatile var/run; do
-    install -d "${FILES_PKG}"/$dir
-  done
-
+  install -d "${FILES_PKG}"/etc
   cp -a "${SRCDIR}"/config "${FILES_PKG}"/etc/config
-  ln -s config/.config "${FILES_PKG}"/etc/sysconfig
+
+  mv "${FILES_PKG}"/etc/config/.config "${FILES_PKG}"/etc/sysconfig
+  ln -s ../sysconfig "${FILES_PKG}"/etc/config/.config
+
+  install -d "${FILES_PKG}"/var/run
+  install -d "${FILES_PKG}"/var/log
+  install -d "${FILES_PKG}"/local/data
+  install -d "${FILES_PKG}"/local/volatile
 
   cp -a "${SRCDIR}"/pkgfiles/. "${FILES_PKG}"
 }

@@ -36,12 +36,12 @@ step_install() {
   install -d "${FILES_PKG}"/etc/dropbear
   dropbearkey -t rsa -f "${FILES_PKG}"/etc/dropbear/dropbear_rsa_host_key
 
-  install -D /dev/null "${FILES_PKG}"/etc/minit/dropbear/run
-  install -Dm644 /dev/null "${FILES_PKG}"/etc/minit/dropbear/respawn
+  install -D /dev/null "${FILES_PKG}"/etc/minit/net.dropbear/run
+  touch "${FILES_PKG}"/etc/minit/net.dropbear/respawn
   {
     echo "#!/bin/sh"
     echo "exec /bin/dropbear -F -B"
-  } > "${FILES_PKG}"/etc/minit/dropbear/run
+  } > "${FILES_PKG}"/etc/minit/net.dropbear/run
 
   install_license "${SRCDIR}"/${S}/LICENSE "${FILES_PKG}"
 }

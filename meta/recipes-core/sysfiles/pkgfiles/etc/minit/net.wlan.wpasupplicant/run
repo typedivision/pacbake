@@ -1,12 +1,12 @@
 #!/bin/sh
 
-SRV="${PWD#/etc/minit/}"
+SVC="${PWD#/etc/minit/}"
 
 WIFI_SSID="$(cat /etc/sysconfig | grep NET_WIFI_SSID | cut -d= -f2 | xargs)"
 WIFI_PASS="$(cat /etc/sysconfig | grep NET_WIFI_PASS | cut -d= -f2 | xargs)"
 
 if ! [ "$WIFI_SSID" ] || ! [ "$WIFI_PASS" ]; then
-  echo "$SRV: no ssid or passphrase config found"
+  logger "$SVC: no ssid or passphrase config found"
   exit
 fi
 
@@ -19,4 +19,4 @@ PIDFILE=/var/run/wpa_supplicant.pid
 rm -rf $PIDFILE
 wpa_supplicant -B -P $PIDFILE -D nl80211 -i wlan0 -c /etc/wpa_supplicant.conf
 
-cat $PIDFILE > pid
+echo $PIDFILE > pidfile

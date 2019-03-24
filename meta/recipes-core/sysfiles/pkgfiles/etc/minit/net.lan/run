@@ -1,0 +1,17 @@
+#!/bin/sh
+
+SVC="${PWD#/etc/minit/}"
+
+ip addr add 127.0.0.1/8 dev lo
+ip link set lo up
+
+NET_ADDR="$(cat /etc/sysconfig | grep NET_ETH0_ADDR | cut -d= -f2 | xargs)"
+NET_MASK="$(cat /etc/sysconfig | grep NET_ETH0_MASK | cut -d= -f2 | xargs)"
+
+if ! [ "$NET_ADDR" ] || ! [ "$NET_MASK" ]; then
+  logger "$SVC: no ip/netmask config found"
+  exit
+fi
+
+ip addr add $NET_ADDR/$NET_MASK dev eth0
+ip link set eth0 up

@@ -131,7 +131,7 @@ do_build() {
   if ! [ "$DEVROOT" ]; then
     exec ${WRAP_DEVROOT_USER} "$0"
   fi
-  bbmsg NOTE "Start Build at $(date +'%T %Z')"
+  bbmsg NOTE "Start build at $(date +'%T %Z')"
   cd "${SRCDIR}"
   step_prepare
   cd "${SRCDIR}"

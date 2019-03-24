@@ -22,4 +22,16 @@ config NET_WIFI_PASS
     help
       Passphrase for wifi connection.
 
+config NET_ETH0_ADDR
+    string "eth0 ip address"
+    default "192.168.1.10"
+    help
+      Static ip address for the interface eth0.
+
+config NET_ETH0_MASK
+    string "eth0 subnet prefix"
+    default "24"
+    help
+      Subnet prefix length for the interface eth0.
+
 endmenu

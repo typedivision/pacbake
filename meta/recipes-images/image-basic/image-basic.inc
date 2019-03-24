@@ -5,6 +5,8 @@ HOST_DEPENDS = "arch-install-scripts squashfs-tools dosfstools mtools"
 IMAGE_PKGS = "sysbase sysdebug sysfiles linux-rpi pacman dropbear"
 DEPENDS = "${IMAGE_PKGS}"
 
+POST_IMAGE_INSTALL_CMD ?= ""
+
 step_install() {
   mkdir "${RESULT}"/image
   cd "${RESULT}"/image
@@ -19,8 +21,10 @@ step_install() {
   mkdir rootfs
   pacstrap -GMC pacman.conf rootfs ${IMAGE_PKGS}
 
-  rm -rf rootfs/var/cache
-  ln -sf /var/run rootfs/run
+  rm -rf rootfs/var/cache rootfs/run
+  ln -s /var/run rootfs/run
+
+  ${POST_IMAGE_INSTALL_CMD}
 
   mksquashfs rootfs rootfs.sqfs -comp xz
   mkdir -p "${FILES_DEPLOY}"/image
