@@ -29,4 +29,7 @@ if [ "$HOSTNAME" ]; then
   hostname "$HOSTNAME"
 fi
 
-exec /sbin/getty -L 115200 /dev/console vt100
+msvc -u syslogd
+msvc -u klogd
+msvc -o system
+msvc -u getty

@@ -1,3 +1,2 @@
 #!/bin/sh
-
-exec udhcpc -f -i wlan0
+exec udhcpc -f -i wlan0 -S &> /dev/null

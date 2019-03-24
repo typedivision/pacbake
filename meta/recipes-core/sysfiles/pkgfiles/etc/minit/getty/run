@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /sbin/getty -L 115200 /dev/console vt100
