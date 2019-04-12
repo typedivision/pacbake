@@ -155,13 +155,13 @@ do_install() {
     exec ${WRAP_DEVROOT} "$0"
   fi
   mkdir -p "${FILES_DEVEL}" "${FILES_SHARE}" "${FILES_DEPLOY}"
-  for p in ${PACKAGES}; do
-    if [ "$p" = "${PN}" ]; then
+  if [ $(echo ${PACKAGES} | wc -w) -eq 1 ]; then
       install -d "${FILES_PKG}"
-    else
+  else
+    for p in ${PACKAGES}; do
       install -d "${FILES_PKG}_$p"
-    fi
-  done
+    done
+  fi
   cd "${SRCDIR}"
   step_install
 }
@@ -217,8 +217,8 @@ do_stage() {
 
 python teardown() {
     bb.build.del_stamp("do_setup", d)
-    sysbase = d.expand("${DEVROOT}")
-    bb.utils.remove(sysbase, True)
+    devroot = d.expand("${DEVROOT}")
+    bb.utils.remove(devroot, True)
 }
 
 addtask deploy after do_stage

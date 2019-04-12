@@ -8,24 +8,24 @@ SRC_URI = " \
   https://www.python.org/ftp/${P}/${PV}/Python-${PV}.tar.xz;md5sum=df6ec36011808205beda239c72f947cb \
 "
 
+PACKAGES = "python python-server"
+
 HOST_DEPENDS = "python3"
 DEPENDS = "crosstool-ng"
 
 step_build() {
   cd "${SRCDIR}"/Python-${PV}
-
   {
     echo "*disabled*"
-    echo "_asyncio _bz2 _codecs_cn _codecs_hk _codecs_iso2022 _codecs_jp _codecs_kr"
-    echo "_codecs_tw _contextvars _crypt _csv _ctypes _ctypes_test _curses _curses_panel"
-    echo "_dbm _decimal _gdbm _json _lsprof _lzma _multibytecodec _multiprocessing _queue"
-    echo "_sha256 _sqlite3 _ssl _testbuffer _testcapi _testimportmultiple _testmultiphase"
-    echo "_tkinter _uuid _xxtestfuzz audioop mmap nis ossaudiodev parser pwd readline"
-    echo "resource termios xxlimited"
+    echo "_abc _elementtree _hashlib _pickle"
+    echo "array atexit cmath fcntl grp pwd spwd syslog time unicodedata zlib"
 
-    echo "_abc _bisect _blake2 _datetime _elementtree _hashlib _heapq _md5 _opcode _pickle"
-    echo "_posixsubprocess _random _sha1 _sha3 _sha512 _struct _socket array atexit binascii"
-    echo "cmath fcntl grp math pyexpat pwd select spwd syslog time unicodedata zlib"
+    echo "_asyncio _bz2 _codecs_cn _codecs_hk _codecs_iso2022 _codecs_jp _codecs_kr"
+    echo "_codecs_tw _crypt _csv _ctypes _ctypes_test _curses _curses_panel"
+    echo "_dbm _gdbm _json _lsprof _lzma _multibytecodec _multiprocessing _queue"
+    echo "_sqlite3 _ssl _testbuffer _testcapi _testimportmultiple _testmultiphase"
+    echo "_tkinter _uuid _xxtestfuzz audioop mmap nis ossaudiodev parser readline"
+    echo "resource termios xxlimited"
   } > Modules/Setup.local
 
   ./configure \
@@ -48,23 +48,29 @@ step_build() {
 step_install() {
   cd "${SRCDIR}"/Python-${PV}
   make DESTDIR="${FILES_DEVEL}"/${SDK_SYSROOT} install
+  install_python
+  install_python_server
+}
 
+install_python() {
+  local pkgdir="${FILES_PKG}_python"
   cd "${FILES_DEVEL}"/${SDK_SYSROOT}
-  install -D usr/lib/*.so* -t "${FILES_PKG}"/usr/lib
-  install -D usr/bin/python3.7 -t "${FILES_PKG}"/usr/bin
-  ln -s python3.7 "${FILES_PKG}"/usr/bin/python3
-  ln -s python3.7 "${FILES_PKG}"/usr/bin/python
+
+  install -D usr/lib/*.so* -t "$pkgdir"/usr/lib
+  install -D usr/bin/python3.7 -t "$pkgdir"/usr/bin
+  ln -s python3.7 "$pkgdir"/usr/bin/python3
+  ln -s python3.7 "$pkgdir"/usr/bin/python
 
   cd usr/lib/python3.7
-  install -d "${FILES_PKG}"/usr/lib/python3.7/lib-dynload
-  install -d "${FILES_PKG}"/usr/lib/python3.7/encodings
+  install -d "$pkgdir"/usr/lib/python3.7/lib-dynload
+  install -d "$pkgdir"/usr/lib/python3.7/encodings
 
   install \
     encodings/__init__.py \
     encodings/aliases.py \
     encodings/utf_8.py \
     encodings/latin_1.py \
-    "${FILES_PKG}"/usr/lib/python3.7/encodings
+    "$pkgdir"/usr/lib/python3.7/encodings
 
   install \
     codecs.py \
@@ -77,7 +83,54 @@ step_install() {
     genericpath.py \
     _collections_abc.py \
     _sitebuiltins.py \
-    "${FILES_PKG}"/usr/lib/python3.7
+    "$pkgdir"/usr/lib/python3.7
 
-  install_license "${SRCDIR}"/Python-${PV}/LICENSE "${FILES_PKG}"
+  install_license "${SRCDIR}"/Python-${PV}/LICENSE "$pkgdir"
+}
+
+install_python_server() {
+  local pkgdir="${FILES_PKG}_python-server"
+  cd "${FILES_DEVEL}"/${SDK_SYSROOT}/usr/lib/python3.7
+
+  install -d "$pkgdir"/usr/lib/python3.7/lib-dynload
+  install \
+    lib-dynload/math.cpython* \
+    lib-dynload/_datetime.cpython* \
+    lib-dynload/_heapq.cpython* \
+    lib-dynload/_random.cpython* \
+    lib-dynload/_bisect.cpython* \
+    lib-dynload/_md5.cpython* \
+    lib-dynload/_sha1.cpython* \
+    lib-dynload/_sha3.cpython* \
+    lib-dynload/_sha256.cpython* \
+    lib-dynload/_sha512.cpython* \
+    lib-dynload/_blake2.cpython* \
+    lib-dynload/_socket.cpython* \
+    lib-dynload/select.cpython* \
+    lib-dynload/_struct.cpython* \
+    lib-dynload/binascii.cpython* \
+    lib-dynload/_contextvars.cpython* \
+    lib-dynload/pyexpat.cpython* \
+    lib-dynload/_opcode.cpython* \
+    lib-dynload/_posixsubprocess.cpython* \
+    "$pkgdir"/usr/lib/python3.7/lib-dynload
+ 
+  install \
+    copy.py types.py weakref.py _weakrefset.py copyreg.py \
+    datetime.py enum.py re.py sre_*.py functools.py operator.py \
+    keyword.py heapq.py reprlib.py random.py warnings.py \
+    hashlib.py traceback.py linecache.py tokenize.py token.py \
+    string.py threading.py bisect.py socket.py selectors.py \
+    calendar.py locale.py base64.py struct.py quopri.py uu.py \
+    mimetypes.py shutil.py fnmatch.py socketserver.py decimal.py \
+    _pydecimal.py numbers.py contextvars.py inspect.py dis.py \
+    opcode.py pydoc.py contextlib.py pkgutil.py platform.py \
+    subprocess.py signal.py \
+    "$pkgdir"/usr/lib/python3.7
+
+  for libdir in http email collections logging urllib html xml xmlrpc importlib; do
+    find $libdir -name "*.py" -exec cp --parent {} "$pkgdir"/usr/lib/python3.7 \;
+  done
+
+  install -Dm644 "${SRCDIR}"/Python-${PV}/LICENSE -t "$pkgdir"/usr/share/licenses/python-server
 }
