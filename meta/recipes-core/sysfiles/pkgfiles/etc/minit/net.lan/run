@@ -13,5 +13,7 @@ if ! [ "$NET_ADDR" ] || ! [ "$NET_MASK" ]; then
   exit
 fi
 
+modprobe smsc95xx
+
 ip addr add $NET_ADDR/$NET_MASK dev eth0
 ip link set eth0 up
