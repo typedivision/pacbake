@@ -7,10 +7,9 @@ LICENSE = "GPL"
 SRC_URI = " \
   git://github.com/crosstool-ng/crosstool-ng;protocol=https \
   file://crosstool-ng_${TARGET_ALIAS}.config \
-  file://0001-no-license-deployment-for-ct-itself.patch \
 "
 
-SRCREV = "616870f619ab97c31466c71b37ca07978dc9ed65"
+SRCREV = "b2151f1dba2b20c310adfe7198e461ec4469172b"
 
 HOST_DEPENDS = " \
   wget ca-certificates xz unzip \
@@ -25,9 +24,6 @@ step_devshell() {
 
 step_prepare() {
   cd "${SRCDIR}"/git
-
-  # build crosstool-ng
-  patch -Np1 -i "${SRCDIR}"/0001-no-license-deployment-for-ct-itself.patch
 
   export CC="${CC_BUILD}"
   ./bootstrap
@@ -76,22 +72,20 @@ install_sysbase() {
   cd ${SDK_PREFIX}/${TARGET_SYS}/sysroot
 
   install -d "$pkgdir"/lib "$pkgdir"/usr/lib
-  cp -a lib/. usr/lib/. "$pkgdir"/lib
+  cp -a lib/. "$pkgdir"/lib
+  cp -a usr/lib/. "$pkgdir"/usr/lib
   ln -s lib "$pkgdir"/lib64
   ln -s lib "$pkgdir"/usr/lib64
 
   for ext in a o map pc py spec; do
     find "$pkgdir" -name "*.$ext" -exec rm {} \;
   done
-  rm -r "$pkgdir"/lib/{audit,gconv,pkgconfig}
-  rm "$pkgdir"/lib/lib*san.*
-
-  install -d "$pkgdir"/usr/bin
-  cp sbin/ldconfig "$pkgdir"/usr/bin
-  cp usr/bin/ldd "$pkgdir"/usr/bin
+  rm -r "$pkgdir"/usr/lib/pkgconfig
+  rm -r "$pkgdir"/usr/lib/terminfo
 
   install -d "$pkgdir"/usr/share/licenses
-  for pn in expat gcc glibc linux ncurses; do
+  # TODO add musl license
+  for pn in expat gcc ncurses; do
     cp -a ${SDK_PREFIX}/share/licenses/$pn "$pkgdir"/usr/share/licenses
   done
 
@@ -104,9 +98,6 @@ install_sysdebug() {
 
   install -d "$pkgdir"/opt/debug
   cp -a debug-root/usr/bin "$pkgdir"/opt/debug
-
-  install -d "$pkgdir"/opt/debug/lib
-  cp -a sysroot/lib/lib*san.* "$pkgdir"/opt/debug/lib
 
   install -d "$pkgdir"/usr/share/licenses
   for pn in gdb strace; do

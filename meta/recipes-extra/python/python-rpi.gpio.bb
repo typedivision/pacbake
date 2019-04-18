@@ -18,7 +18,7 @@ step_install() {
   cd "${SRCDIR}"/code
 
   export PYTHONPATH="${SDK_SYSROOT}"/usr/lib/python3.7
-  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata_m_linux_aarch64-linux-gnu
+  export _PYTHON_SYSCONFIGDATA_NAME=_sysconfigdata_m_linux_${TARGET_ARCH}-linux-gnu
   export PYTHONDONTWRITEBYTECODE=1
 
   python setup.py install --root="${FILES_PKG}"

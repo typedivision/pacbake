@@ -6,6 +6,7 @@ LICENSE = "GPL"
 
 SRC_URI = " \
   https://github.com/thom311/libnl/releases/download/${P}${@d.getVar('PV').replace('.','_')}/${S}.tar.gz;md5sum=8f71910c03db363b41e2ea62057a4311 \
+  file://0001-musl-workaround.patch \
 "
 
 HOST_DEPENDS = "flex bison"
@@ -13,6 +14,8 @@ DEPENDS = "crosstool-ng"
 
 step_build() {
   cd "${SRCDIR}"/${S}
+
+  patch -Np1 -i "${SRCDIR}"/0001-musl-workaround.patch
 
   ./configure \
     --host=${TARGET_SYS} \
