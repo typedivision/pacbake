@@ -1,6 +1,7 @@
 EXCLUDE_FROM_WORLD = "1"
 
-deltask do_package do_repo_add
+deltask do_package
+deltask do_repo_add
 
 python() {
     pn = d.getVar("PN")
