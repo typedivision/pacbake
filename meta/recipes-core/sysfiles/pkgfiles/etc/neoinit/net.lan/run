@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SVC="${PWD#/etc/minit/}"
+SVC="${PWD#/etc/neoinit/}"
 
 ip addr add 127.0.0.1/8 dev lo
 ip link set lo up
@@ -10,7 +10,7 @@ NET_MASK="$(cat /etc/sysconfig | grep NET_ETH0_MASK | cut -d= -f2 | xargs)"
 
 if ! [ "$NET_ADDR" ] || ! [ "$NET_MASK" ]; then
   logger "$SVC: no ip/netmask config found"
-  exit
+  exit 1
 fi
 
 modprobe smsc95xx

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+SVC="${PWD#/etc/neoinit/}"
+
+for check in $(seq 20); do
+  msvc net.wlan.wpasupplicant &> /dev/null
+  RET=$?
+  if [ $RET -eq 0 ]; then
+    WPASUPPLICANT_UP=1
+    break
+  elif [ $RET -eq 4 ]; then
+    break
+  else
+    sleep 1
+  fi
+done
+
+if [ ! "$WPASUPPLICANT_UP" ]; then
+  exit 1
+fi
+
+msvc -R "$SVC"
+exec udhcpc -f -i wlan0 -S &> /dev/null

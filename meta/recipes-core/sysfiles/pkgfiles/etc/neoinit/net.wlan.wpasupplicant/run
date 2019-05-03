@@ -1,0 +1,12 @@
+#!/bin/sh
+
+SVC="${PWD#/etc/neoinit/}"
+
+PIDFILE=$1
+
+if [ ! -f "$PIDFILE" ]; then
+  exit 1
+fi
+
+msvc -R "$SVC"
+echo $PIDFILE > pidfile

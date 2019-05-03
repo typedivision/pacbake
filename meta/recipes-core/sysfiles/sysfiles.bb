@@ -21,7 +21,7 @@ step_install() {
   install -d "${FILES_PKG}"/var/run
   install -d "${FILES_PKG}"/var/log
   install -d "${FILES_PKG}"/local/data
-  install -d "${FILES_PKG}"/local/volatile
+  install -d "${FILES_PKG}"/local/overlay
 
   cp -a "${SRCDIR}"/pkgfiles/. "${FILES_PKG}"
 }

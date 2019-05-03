@@ -1,13 +1,13 @@
 #!/bin/sh
 
-SVC="${PWD#/etc/minit/}"
+SVC="${PWD#/etc/neoinit/}"
 
 WIFI_SSID="$(cat /etc/sysconfig | grep NET_WIFI_SSID | cut -d= -f2 | xargs)"
 WIFI_PASS="$(cat /etc/sysconfig | grep NET_WIFI_PASS | cut -d= -f2 | xargs)"
 
 if ! [ "$WIFI_SSID" ] || ! [ "$WIFI_PASS" ]; then
   logger "$SVC: no ssid or passphrase config found"
-  exit
+  exit 1
 fi
 
 modprobe brcmutil
@@ -16,7 +16,8 @@ modprobe brcmfmac
 echo "$WIFI_PASS" | wpa_passphrase "$WIFI_SSID" > /etc/wpa_supplicant.conf
 
 PIDFILE=/var/run/wpa_supplicant.pid
+
 rm -rf $PIDFILE
 wpa_supplicant -B -P $PIDFILE -D nl80211 -i wlan0 -c /etc/wpa_supplicant.conf
 
-echo $PIDFILE > pidfile
+echo $PIDFILE > ../params

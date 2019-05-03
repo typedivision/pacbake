@@ -8,7 +8,7 @@ SRC_URI = " \
   git://github.com/typedivision/neoinit;protocol=https \
 "
 
-SRCREV = "f091ebc307b038cd743aa109d1faaf2f6f865a40"
+SRCREV = "v1.0.0"
 
 DEPENDS = "crosstool-ng"
 
@@ -20,13 +20,13 @@ step_build() {
 }
 
 step_install() {
-  install -d "${FILES_PKG}"/{sbin,bin,etc/minit}
+  install -d "${FILES_PKG}"/{sbin,bin,etc/neoinit}
 
   cd "${SRCDIR}"/git
-  install minit hard-reboot "${FILES_PKG}"/sbin
-  install msvc "${FILES_PKG}"/bin
-  mkfifo -m 600 "${FILES_PKG}"/etc/minit/{in,out}
-  ln -s /sbin/minit "${FILES_PKG}"/sbin/init
+  install neoinit hard-reboot "${FILES_PKG}"/sbin
+  install neorc "${FILES_PKG}"/bin
+  mkfifo -m 600 "${FILES_PKG}"/etc/neoinit/{in,out}
+  ln -s /sbin/neoinit "${FILES_PKG}"/sbin/init
 
   install_license "${SRCDIR}"/git/COPYING "${FILES_PKG}"
 }

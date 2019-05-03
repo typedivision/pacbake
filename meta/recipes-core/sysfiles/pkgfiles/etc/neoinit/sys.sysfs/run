@@ -1,12 +1,12 @@
 #!/bin/sh
 
 DATA=/local/data
-VOLATILE=/local/volatile
+OVERLAY=/local/overlay
 
 mount -t proc proc /proc -o nosuid,noexec,nodev
 mount -t sysfs sysfs /sys -o nosuid,noexec,nodev
 mount -t tmpfs tmpfs /tmp -o nosuid,nodev,noatime,size=2M
-mount -t tmpfs tmpfs $VOLATILE -o nosuid,nodev,noatime,size=5M
+mount -t tmpfs tmpfs $OVERLAY -o nosuid,nodev,noatime,size=5M
 
 if ! fdisk -l | grep -q mmcblk0p2; then
   echo -e "n\np\n2\n\n+32M\nw\n" | fdisk /dev/mmcblk0
@@ -18,10 +18,10 @@ if ! mount -t ext4 /dev/mmcblk0p2 $DATA; then
 fi
 
 for d in etc etc.work var var.work; do
-  mkdir $VOLATILE/$d
+  mkdir -p $OVERLAY/$d
 done
-mount -t overlay -o lowerdir=/etc,upperdir=$VOLATILE/etc,workdir=$VOLATILE/etc.work overlay /etc
-mount -t overlay -o lowerdir=/var,upperdir=$VOLATILE/var,workdir=$VOLATILE/var.work overlay /var
+mount -t overlay -o lowerdir=/etc,upperdir=$OVERLAY/etc,workdir=$OVERLAY/etc.work overlay /etc
+mount -t overlay -o lowerdir=/var,upperdir=$OVERLAY/var,workdir=$OVERLAY/var.work overlay /var
 mount -t tmpfs tmpfs /var/log -o nosuid,nodev,noatime,size=10M
 
 if [ -e $DATA/etc/sysconfig ]; then
