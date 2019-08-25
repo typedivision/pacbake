@@ -29,7 +29,8 @@ if [ "$PKGCACHE" ]; then
 fi
 
 echo "==> Install host tools"
-pacman -Sy $PACOPTS arch-install-scripts python3 wget ca-certificates tar gzip bzip2 xz unzip git bubblewrap tmux vim
+pacman -Sy $PACOPTS arch-install-scripts python3 wget ca-certificates \
+  tar gzip bzip2 xz unzip git mercurial bubblewrap tmux vim
 
 BUILD_DIR="$CMDPATH"/build
 if ! [ -d "$BUILD_DIR" ]; then
