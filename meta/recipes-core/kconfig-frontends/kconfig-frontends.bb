@@ -30,7 +30,7 @@ step_install() {
   cd "${SRCDIR}"/${S}
 
   if [ "${PN}" = "${P}-native" ]; then
-    make DESTDIR="${FILES_DEVEL}" install
+    make DESTDIR="${FILES_DEV}" install
     return
   fi
 

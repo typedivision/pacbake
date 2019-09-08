@@ -23,9 +23,9 @@ step_build() {
 
 step_install() {
   cd "${SRCDIR}"/${S}
-  make INSTALL_PREFIX="${FILES_DEVEL}" install
+  make INSTALL_PREFIX="${FILES_DEV}" install
 
-  cd "${FILES_DEVEL}"/${SDK_SYSROOT}
+  cd "${FILES_DEV}"/${SDK_SYSROOT}
   find usr/lib -name "*.so*" -exec cp --parents {} "${FILES_PKG}" \;
 
   install_license "${SRCDIR}"/${S}/LICENSE "${FILES_PKG}"

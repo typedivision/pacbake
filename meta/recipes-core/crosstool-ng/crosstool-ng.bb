@@ -52,19 +52,19 @@ step_build() {
 }
 
 step_install() {
-  install_devel
+  install_dev
   install_sysbase
   install_sysdebug
 }
 
-install_devel() {
+install_dev() {
   cd ${SDK_PREFIX}
-  install -d "${FILES_DEVEL}"/${SDK_PREFIX}
-  cp -a bin lib libexec "${FILES_DEVEL}"/${SDK_PREFIX}
+  install -d "${FILES_DEV}"/${SDK_PREFIX}
+  cp -a bin lib libexec "${FILES_DEV}"/${SDK_PREFIX}
 
   cd ${SDK_PREFIX}/${TARGET_SYS}
-  install -d "${FILES_DEVEL}"/${SDK_PREFIX}/${TARGET_SYS}
-  cp -a bin sysroot "${FILES_DEVEL}"/${SDK_PREFIX}/${TARGET_SYS}
+  install -d "${FILES_DEV}"/${SDK_PREFIX}/${TARGET_SYS}
+  cp -a bin sysroot "${FILES_DEV}"/${SDK_PREFIX}/${TARGET_SYS}
 }
 
 install_sysbase() {

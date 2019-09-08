@@ -24,9 +24,9 @@ step_build() {
 
 step_install() {
   cd "${SRCDIR}"/${S}
-  make DESTDIR="${FILES_DEVEL}" install
+  make DESTDIR="${FILES_DEV}" install
 
-  cd "${FILES_DEVEL}"/${SDK_SYSROOT}
+  cd "${FILES_DEV}"/${SDK_SYSROOT}
   find usr/lib -name "*.so*" -exec cp --parents {} "${FILES_PKG}" \;
 
   install_license "${SRCDIR}"/${S}/COPYING "${FILES_PKG}"

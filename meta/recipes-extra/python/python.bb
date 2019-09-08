@@ -47,14 +47,14 @@ step_build() {
 
 step_install() {
   cd "${SRCDIR}"/Python-${PV}
-  make DESTDIR="${FILES_DEVEL}"/${SDK_SYSROOT} install
+  make DESTDIR="${FILES_DEV}"/${SDK_SYSROOT} install
   install_python
   install_python_server
 }
 
 install_python() {
   local pkgdir="${FILES_PKG}_python"
-  cd "${FILES_DEVEL}"/${SDK_SYSROOT}
+  cd "${FILES_DEV}"/${SDK_SYSROOT}
 
   install -D usr/lib/*.so* -t "$pkgdir"/usr/lib
   install -D usr/bin/python3.7 -t "$pkgdir"/usr/bin
@@ -90,7 +90,7 @@ install_python() {
 
 install_python_server() {
   local pkgdir="${FILES_PKG}_python-server"
-  cd "${FILES_DEVEL}"/${SDK_SYSROOT}/usr/lib/python3.7
+  cd "${FILES_DEV}"/${SDK_SYSROOT}/usr/lib/python3.7
 
   install -d "$pkgdir"/usr/lib/python3.7/lib-dynload
   install \

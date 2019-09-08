@@ -101,9 +101,9 @@ setup_devroot() {
     ) 100>"${PKGCACHE}/pkgcache.lock"
   fi
   for dep in ${BUILD_DEPENDS}; do
-    if [ -e "${STAGE}"/$dep/$dep.devel.tar.gz ]; then
+    if [ -e "${STAGE}"/$dep/$dep.dev.tar.gz ]; then
       bbmsg INFO "setup $dep"
-      tar -h -xf "${STAGE}"/$dep/$dep.devel.tar.gz -C "${DEVROOT}"
+      tar -h -xf "${STAGE}"/$dep/$dep.dev.tar.gz -C "${DEVROOT}"
     fi
     if [ -e "${STAGE}"/$dep/$dep.share.tar.gz ]; then
       bbmsg INFO "setup shared files of $dep"
@@ -131,7 +131,7 @@ do_build() {
   if ! [ "$DEVROOT" ]; then
     exec ${WRAP_DEVROOT_USER} "$0"
   fi
-  bbmsg NOTE "Start build at $(date +'%T %Z')"
+  bbmsg NOTE "started at $(date +'%T')"
   cd "${SRCDIR}"
   step_prepare
   cd "${SRCDIR}"
@@ -154,7 +154,7 @@ do_install() {
   if ! [ "$DEVROOT" ]; then
     exec ${WRAP_DEVROOT} "$0"
   fi
-  mkdir -p "${FILES_DEVEL}" "${FILES_SHARE}" "${FILES_DEPLOY}"
+  mkdir -p "${FILES_DEV}" "${FILES_SHARE}" "${FILES_DEPLOY}"
   if [ $(echo ${PACKAGES} | wc -w) -eq 1 ]; then
       install -d "${FILES_PKG}"
   else
@@ -201,8 +201,8 @@ do_stage[cleandirs] = "${STAGE}/${PN}"
 do_stage[postfuncs] = "teardown"
 
 do_stage() {
-  if [ "$(ls ${FILES_DEVEL})" ]; then
-    tar -czf "${STAGE}/${PN}/${PN}".devel.tar.gz -C "${FILES_DEVEL}" .
+  if [ "$(ls ${FILES_DEV})" ]; then
+    tar -czf "${STAGE}/${PN}/${PN}".dev.tar.gz -C "${FILES_DEV}" .
   fi
   if [ "$(ls ${FILES_SHARE})" ]; then
     tar -czf "${STAGE}/${PN}/${PN}".share.tar.gz -C "${FILES_SHARE}" .

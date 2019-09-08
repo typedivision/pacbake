@@ -1,23 +1,21 @@
 #!/bin/sh -e
-#
-# CI build script
-#
 CMDPATH=$(cd "$(dirname $0)" && pwd)
-REPODIR=$(realpath "$CMDPATH"/..)
 
-STORE=/store
-PKGCACHE=$STORE/pkgcache
+. "$CMDPATH"/setup.in
 
-PATH="$REPODIR"/bitbake/bin:$PATH
+echo "==> build all"
 
-cd "$REPODIR"
-./pacstage-init.sh -C "$PKGCACHE"
+bitbake world || EXIT=1
 
-cd build
-{
-  echo 'PKGCACHE   = "'$PKGCACHE'"'
-  echo 'DL_DIR_TOP = "'$STORE'"'
-  echo 'SSTATE_TOP = "'$STORE'"'
-} > conf/local.conf
+echo "==> store buildlog"
 
-bitbake world
+PACBASE=$(bitbake -e | grep "^PACBASE=" | cut -d= -f2 | xargs)
+DEPLOY=$(bitbake -e | grep "^DEPLOY=" | cut -d= -f2 | xargs)
+
+cd "$PACBASE"
+
+mkdir buildlog
+find . -path "*/temp/log/*" -exec cp --parent {} buildlog \;
+tar -czf "$DEPLOY"/buildlog.tar.gz -C buildlog .
+
+exit $EXIT

@@ -1,0 +1,14 @@
+CMDPATH=$(cd $(dirname ${BASH_SOURCE[0]:-.}) && pwd)
+REPODIR=$(realpath "$CMDPATH"/..)
+
+echo "==> setup build dir"
+
+BUILD_DIR="$REPODIR"/build
+if ! [ -d "$BUILD_DIR" ]; then
+  mkdir -p "$BUILD_DIR"/conf
+  echo 'BBLAYERS = "${TOPDIR}/../meta"' > "$BUILD_DIR"/conf/bblayers.conf
+  echo 'PACBASE  = "/pacbase"' > conf/local.conf
+fi
+
+PATH="$REPODIR"/bitbake/bin:$PATH
+cd "$BUILD_DIR"
